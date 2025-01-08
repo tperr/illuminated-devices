@@ -1,0 +1,15 @@
+// wooooooooooImBouttaMakeAStylesheetForMyself
+
+.name-box {
+    border: solid black 1px;
+    &--error {
+        border: solid red 1px;
+    }
+}
+
+.org-box {
+    border: solid black 1px;
+    &--error {
+        border: solid red 1px;
+    }
+}

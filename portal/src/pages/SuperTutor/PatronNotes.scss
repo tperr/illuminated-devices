@@ -1,0 +1,140 @@
+@use "../../variables";
+
+.patron-notes-box {
+  height: 100%;
+}
+
+.patron-notes-header {
+  border: 2px variables.$primary-dark solid;
+  border-top: 0px;
+  padding: 5px;
+  font-weight: bold;
+
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  min-height: 25px;
+  max-height: 20%;
+}
+
+.notes-content{
+  padding: 10px;
+  height: 80%;
+}
+
+.sender{
+  display: flex;
+  justify-content: center;
+  height: 87%;
+  flex-direction: column;
+  position: relative;
+}
+
+.patron-notes-name {
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.notes-textbox{
+  width: 99%;
+  //height: 88%;
+  height: 60%;
+  margin-right: auto;
+  margin-left: auto;
+  margin-bottom: 1%;
+  // margin: auto;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  resize: none;
+}
+
+.notes-update-button{
+  @include variables.button-base; 
+  margin-right: auto;
+  margin-left: auto;
+
+  padding: 5px;
+
+  &:hover {
+      background-color: variables.$secondary-light-2;
+      transition: 0.2s;
+  }
+}
+
+.close-notes{
+  @include variables.button-base; 
+  background-color: #D21404;
+  font-size: x-small !important;
+  font-family: auto;
+  margin: 5px;
+  position: relative;
+  top: 1%;
+  padding: 5px;
+  margin-bottom: 0;
+
+  &:hover {
+      background-color: #B90E0A;
+      transition: 0.2s;
+  }
+}
+
+.note-item {
+  margin-bottom: 10px;
+
+  display: flex;
+  height: 60%;
+
+  .notes-textbox {
+    width: 100%;
+    height: auto;
+  }
+
+}
+
+.note-item-fs {
+  margin-bottom: 10px;
+
+  display: flex;
+
+  .notes-textbox {
+    width: 100%;
+    height: 60vh;
+  }
+}
+
+.notes-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+
+  .notes-nav-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .notes-update-button {
+    margin: 0 10px;
+  }
+}
+
+.notes-navigation-fs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+
+  .notes-nav-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+  }
+
+  .notes-update-button {
+    margin: 0 10px;
+  }
+}

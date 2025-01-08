@@ -1,0 +1,71 @@
+// Main color scheme
+$primary-light-1: #8ecae6;
+$primary-light-2: #219ebc;
+$primary-dark: #023047;
+$secondary-light-1: #ffb703;
+$secondary-light-2: #fb8500; 
+$tertiary-light-1: #f7ccac;
+$background: #f0f0f0;
+$accent-light: #e3e3e3;
+$accent-dark: #e6e6e6;
+$accent-darker: #bfbfbf;
+$error: red;
+
+// Accessibility 
+$focus: #0060df;
+$focus-styling: solid 2px $focus !important;
+
+// Fonts
+$font-normal: "Poppins";
+$font-semibold: "Poppins-SB";
+$font-bold: "Poppins-EB";
+
+/*
+    Button Base Style
+    When using, manually define:
+    (1) any margins (i.e., margin-top: 10px)
+    (2) width (i.e., width: 100%)
+*/
+@mixin button-base--super {
+    border-radius: 5px;
+    border: 0;
+    font-family: $font-semibold;
+    font-size: 1em;
+    outline: none;
+    padding: 5px 10px;
+    text-transform: uppercase;
+
+    &:focus-visible {
+        outline: focus-styling;
+    }
+}
+
+@mixin button-base {
+    @include button-base--super; 
+    background-color: $secondary-light-1;
+    color: white;
+    cursor: pointer;
+}
+
+@mixin button-base--disabled {
+    @include button-base--super;
+    background-color: gray;
+    color: white;
+    cursor: not-allowed;
+}
+
+:export {
+    primaryLight1: $primary-light-1;
+    primaryLight2: $primary-light-2;
+    secondaryLight1: $secondary-light-1;
+    secondaryLight2: $secondary-light-2;
+    tertiaryLight1: $tertiary-light-1;
+    background: $background;
+    accentLight: $accent-light;
+    accentDark: $accent-dark;
+    accentDarker: $accent-darker;
+    error: $error;
+    fontNormal: $font-normal;
+    fontSemibold: $font-semibold;
+    fontBold: $font-bold;
+}

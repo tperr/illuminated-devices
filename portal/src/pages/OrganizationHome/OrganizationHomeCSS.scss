@@ -1,0 +1,220 @@
+@use "../../variables";
+$rows: 6; // Keep in mind that Navbar and Footer each count as 1 row
+$cols: 2;
+
+.display-flex {
+    display: flex;
+}
+
+.attributeTitle2 {
+    font-family: "Poppins-SB";
+    font-size: 1em;
+    padding-top: 1em;
+}
+
+.content {
+    box-sizing: border-box;
+}
+
+.wrapper {
+    display: grid; 
+    //min-height: 100vh;
+    grid-template-rows: auto auto auto 1fr auto auto;
+    overflow: auto;
+
+    // Row 1
+    .grid-navbar {
+        grid-row: 1;
+        grid-column: 1 / span $cols;
+    }
+
+    // Row 2
+    .inner-navigation {
+        grid-row: 2;
+        grid-column: 1 / span $cols;
+    }
+
+    // Row 3
+    .spacer {
+        grid-row: 3;
+        grid-column: 1 / span $cols;
+        min-height: 20px;
+        background-color: transparent;
+    }
+
+    // Row 4
+    .inner-page-container {
+        @mixin inner-page-container--super {
+            grid-row: 4;
+            grid-column: 1 / span $cols;
+            overflow: hidden;
+            padding-top: 20px;
+
+    
+            min-height: 30em; // Must be >= the category-list height 
+        }
+        @include inner-page-container--super();
+        border: variables.$accent-light 0.1em solid;
+        border-radius: 6px;
+        margin-left: 2em;
+        margin-right: 2em;
+
+        &--mini {
+            @include inner-page-container--super();
+            margin-left: 0em;
+            margin-right: 0em;
+        }
+    }
+
+    // Row 5
+    .middle {
+        background-color: red;
+        grid-row: 5;
+        grid-column: 1;
+        margin-top: 10px;
+    }
+
+    .middletest {
+        background-color: purple;
+        grid-row: 5;
+        grid-column: 2;
+        margin-top: 10px;
+    }
+
+    // Row Footer
+    .grid-footer {
+        grid-row: $rows;
+        grid-column: 1 / span $cols;
+        margin-top: 1em;
+    }
+}
+
+.inner-page-navbar {
+    display: flex;
+    margin-left: 2.1em;
+    z-index: 10;
+    background-color: transparent;
+    grid-column: 1 / span $cols;
+
+    @mixin option {
+        border: variables.$accent-light 0.1em solid;
+        color: variables.$primary-dark;
+        cursor: pointer;
+        height: auto;
+        margin-top: 1em;
+        outline: none;
+        padding: 0.5em;
+        position: relative;
+        text-align: center;
+
+        &:focus-visible {
+            border: variables.$focus-styling;
+        }
+    }
+
+    .option {
+        @include option;
+
+        &:hover {
+            background-color: variables.$primary-light-1;
+        }
+
+        &--selected {
+            @include option;
+            background: variables.$primary-light-2;
+        }
+
+	&--disabled {
+	    @include option;
+	    background: gray;
+	    cursor: not-allowed;
+	    color: white;
+	}
+    }
+
+    @mixin option-text {
+        display: block;
+        font-family: "Poppins";
+        transition-property: font-size;
+        transition-duration: 0.1s;
+        transition-timing-function: linear;
+    }
+
+    .option-content-big {
+        @include option-text;
+        font-size: 1.2em;
+    }
+
+    .option-content-small {
+        @include option-text;
+        font-size: 1em;
+    }
+
+    .option-content-xsmall {
+        @include option-text;
+        font-size: 0.8em;
+    }
+}
+
+.display-box2 {
+    @mixin display-box {
+        border-radius: 6px;
+        box-sizing: border-box;
+        color: variables.$primary-dark;
+        font-family: variables.$font-normal;
+        font-size: 1em;
+        outline: none;
+        padding: 7px 7px 7px 7px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @include display-box;
+    background: variables.$accent-light;
+    border: variables.$primary-dark 0.1em solid;
+
+    &--editing {
+        @include display-box;
+        background: #ffffff; 
+        border: variables.$primary-light-1 0.1em solid;
+
+        &--paddingRight {
+            padding-right: 1%;
+        }
+
+        &--patronManagementWide {
+            @include display-box;
+            background: #ffffff; 
+            border: variables.$primary-light-1 0.1em solid;    
+            width: 100%;
+        }
+    }
+
+    &--error {
+        @include display-box;
+        background: #ffffff;
+        border: variables.$error 0.1em solid;
+
+        &--paddingRight {
+            padding-right: 1%;
+        }
+
+        &--patronManagementWide {
+            @include display-box;
+            background: #ffffff;
+            border: variables.$error 0.1em solid;
+            width: 100%;
+        }
+    }
+
+    &--patronManagementWide {
+        @include display-box; 
+        background: variables.$accent-light;
+        border: variables.$primary-dark 0.1em solid;
+        width: 100%;
+    }
+
+    &--paddingRight {
+        padding-right: 1%;
+    }
+}

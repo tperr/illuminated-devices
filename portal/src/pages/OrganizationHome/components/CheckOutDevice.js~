@@ -1,0 +1,796 @@
+/***** Imports *****/
+// React
+import React from "react";
+
+// FontAwesome Icons
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+// Classes
+import { Patron } from '../classes/Patron';
+import { Device } from '../classes/Device';
+
+// CSS
+import "../../../react-datepicker.css";
+// import "./../column.scss";
+// import "./checkout.scss";
+
+// Other imports
+import Category from './Category';
+import { getYear, getMonth } from "date-fns";
+import Popup from 'reactjs-popup';
+import DatePicker from "react-datepicker";
+
+// Material UI Tooltip
+import Tooltip from "@mui/material/Tooltip";
+
+
+async function performCheckOut(userId, deviceId, patronId, lastCheckout, returnDate) {
+    const fullAddr = "https://illuminated.cs.mtu.edu/ark/checkout";
+    const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+    let status;
+
+    let body = {
+        "data": {
+            "provider": userId,
+            "device": deviceId, 
+            "patron": patronId, 
+            "last_checkout": lastCheckout, 
+            "return_date": returnDate
+        }
+    }
+
+    status = await fetch(fullAddr, {
+        method: 'POST',
+        headers: {
+            'Authorization': authorization,
+            'Content-type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log("response?");
+            console.log(response);
+            return response.json()
+        }
+        throw response;
+    })
+    .then(data => {
+        console.log("data: ")
+        console.log(data);
+        var received_response = data.data;
+        if (received_response["error"] === "invalid_token") {
+            console.log("error code found in checkOut (Provider.js -> checkOut() -> Ark request -> (then) received_response[\"error\"]");
+            // What to do in an error situation?
+        }
+        else {
+            return received_response[0]["checked_out"];
+        }
+        throw data;
+    })
+    .catch(error => {
+        console.error("error code found in checkOut (Provider.js -> checkOut() -> Ark request -> (catch) received_response[\"error\"] ", error);
+        console.log(error);
+    })
+
+    return status; 
+}
+
+/***** Main Export *****/
+const CheckOutDevice = props => {
+    /***** Variables *****/
+    const [checkoutError, setCheckoutError] = React.useState(true);
+    const [confirmCheckOut, setConfirmCheckOut] = React.useState(false);
+    const [popupDidLoad, setPopupDidLoad] = React.useState(false);
+
+    // For calendar
+    const range = (start, end) => {
+        return new Array(end - start).fill().map((d, i) => i + start);
+        };
+    const years = range(1900, getYear(new Date())+1); // Not sure why I need this +1 but without it you can't pick the current year
+    const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+    ];
+    let defaultCheckOutDays = 7;
+    let defaultReturnHour = 12;
+    let defaultCheckOutDate = new Date();
+    let defaultReturnDate = new Date(new Date(new Date(Date.now() + (defaultCheckOutDays * 60 * 60 * 24 * 1000)).setHours(defaultReturnHour)).setMinutes(0));
+    const defaultReturnDateMinimumTimeDifference = 3600; // 60 minutes
+    const checkOutDatePickerRef = React.useRef();
+    const returnDatePickerRef = React.useRef();
+    const [checkOutDate, setCheckOutDate] = React.useState(defaultCheckOutDate);
+    const [returnDate, setReturnDate] = React.useState(defaultReturnDate);
+    const [confirmDateValidity, setConfirmDateValidity] = React.useState(0);
+
+    if ((props.currentPatron === null) || (props.currentPatron === undefined)) {
+        props.setCurrentPatron(new Patron());
+    }
+
+    if ((props.currentDevice === null) || (props.currentDevice === undefined)) {
+        props.setCurrentDevice(new Device());
+    }
+
+    /***** Helper Functions ******/
+    const checkOut = (lastCheckout, returnDate) =>
+    {   
+        let userId = props.userId; 
+        let deviceId = props.currentDevice.id;
+        let patronId = props.currentPatron.id; 
+
+        let status = performCheckOut(userId, deviceId, patronId, Math.floor(lastCheckout.valueOf() / 1000), Math.floor(returnDate.valueOf() / 1000))
+                    .then((response) => { 
+                        console.log("status is: " + response);
+                        props.setDeviceDidCheckout(response);
+                        props.setPagenum(5); 
+                        });
+    
+
+        // setConfirmCheckOut(false); // Closes checkout prompt
+    };
+
+    /* validateConfirmDate
+     * Returns an appropriate error message in the Confirm Check Out Popup if the user tries to enter
+     * a bad Return Date.
+     * The value of confirmDateValidity means the following:
+     *      0: No message is returned because a value of 0 indicates that the Return Date is valid.
+     *      1: The user attempted to set a Return Date that is before or equal to the Check Out Date
+     *         *NOTE:   The days can be the same, but the times cannot. So, this value will not be set just because a user
+     *                  selects the same days, but rather if they select the same days and a Return *time* that is before 
+     *                  the Checkout *time*
+     *      2: The user attempted to set a Return Date that is too soon 
+     *         (i.e., the Return Date does not make sense, such as setting a Return Date only 5 minutes after the Check Out Date)
+     */
+    const validateConfirmDate = () => {
+        switch(confirmDateValidity) {
+            case(0):
+                return undefined;
+            case(1):
+                return "The Return Date must be after the Check Out Date.";
+            case(2):
+                return "The Return Date must be at least " + defaultReturnDateMinimumTimeDifference/60 + " minutes after the Check Out Date.";
+            default:
+                return undefined;
+        }
+    };
+
+    // Allows calendar to be tabbed past
+    // Without this (AKA just using default datePicker) it's impossible to use the forms without a mouse
+    // There's some weird bug with the package where they actually broke this functionality like 2 years ago and never fixed it
+    const handleCheckOutOnKeyDown = event => {
+        if (checkOutDatePickerRef?.current && !checkOutDatePickerRef.current.state.open) {
+            if (event?.keyCode === 13 || event?.which === 13) {
+            event.preventDefault();
+            checkOutDatePickerRef.current?.setOpen(true);
+            }
+        }
+    };
+
+    const handleReturnOnKeyDown = event => {
+        if (returnDatePickerRef?.current && !returnDatePickerRef.current.state.open) {
+            if (event?.keyCode === 13 || event?.which === 13) {
+            event.preventDefault();
+            returnDatePickerRef.current?.setOpen(true);
+            }
+        }
+    };
+
+    const showDeviceDetails = () => {
+        return ( 
+            <div> 
+                <div className={"display-flex"}>
+                    <div className="title">Device Information</div>
+                    {props.currentDevice.isOverdue() && (
+                        <div className="title" style={{textAlign: "right", color: "red", fontFamily: "Poppins-EB"}}>
+                            <FontAwesomeIcon icon="warning"/> Device Overdue
+                        </div>
+                        )}
+                </div>
+
+                <div className="divider"/>
+                
+                <div style={{display: "flex"}}>
+                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                        <div className="attribute">
+                            Device Name
+                        </div>
+                        <div className="display-box2">
+                            {props.currentDevice.name}
+                            {props.currentDevice.name === "" && <div>No name set</div>}
+                        </div>
+                    </div>
+
+                    <div style={{margin: "auto", width: "50%"}}>
+                        <div className="attribute">
+                            Local ID
+                        </div>
+                        <div className="display-box2">
+                            {props.currentDevice.bsid}
+                            {props.currentDevice.bsid === "" && <div>No ID</div>}
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{display: "flex"}}>
+                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                        <div className="attribute">
+                            Last Checkout
+                        </div>
+                        <div className="display-box2">
+                            {(props.currentDevice.lastCheckout !== "") && (
+                                props.currentDevice.getDisplayableTime("lastCheckout")
+                            )}
+                            {props.currentDevice.lastCheckout === "" && <div>No name set</div>}
+                        </div>
+                    </div>
+
+                    <div style={{margin: "auto", width: "50%"}}>
+                        <div className="attribute">
+                            Last Checkin
+                        </div>
+                        <div className="display-box2">
+                            {(props.currentDevice.lastCheckin !== "") && (
+                                props.currentDevice.getDisplayableTime("lastCheckin")
+                            )}
+                            {props.currentDevice.lastCheckin === "" && <div>Unknown</div>}
+                        </div>
+                    </div>
+                </div>
+            
+                <div style={{display: "flex"}}>
+                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                        <div className="attribute">
+                            Home Location
+                        </div>
+                        <div className="display-box2">
+                            {(props.currentDevice.homeLocationId !== "") && (
+                                props.getLocationNameFromId(props.currentDevice.homeLocationId)
+                            )}
+                            {props.currentDevice.homeLocationId === "" && <div>Unknown</div>}
+                        </div>
+                    </div>
+
+                    <div style={{margin: "auto", width: "50%"}}>
+                        <div className="attribute">
+                            Current Location
+                        </div>
+                        <div className="display-box2">
+                            {(props.currentDevice.currentLocationId !== "") && (
+                                props.getLocationNameFromId(props.currentDevice.currentLocationId)
+                            )}
+                            {props.currentDevice.currentLocationId === "" && <div>Unknown</div>}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="divider" style={{marginTop: "0.5em"}}/>
+
+                <div className="attribute">
+                    Notes
+                </div>
+                <div className="display-box2">
+                    {props.currentDevice.notes}
+                    {props.currentDevice.notes === "" && <div>[No notes]</div>}
+                </div>
+
+                <div className="attribute">
+                    Check Out Log
+                </div>
+                <div className="display-box2">
+                    {props.currentDevice.log.map((log, i) => {
+                        return <div key={i}>{log}</div>
+                    })}
+                    {props.currentDevice.log.length === 0 && (<div>[No log]</div>)}
+                </div>
+
+            </div>
+        );
+    };
+
+    const showPatronDetails = () => {
+
+        return (
+            <div> 
+                <div className="title">Patron Information</div>
+                <div className="divider"/>
+
+                <div style={{display: "flex"}}>
+                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                        <div className="attribute">
+                            Patron Name
+                        </div>
+                        <div className="display-box2"> 
+                            {props.currentPatron.identifier}
+                            {props.currentPatron.identifier === "" && <div>No name set</div>}
+                        </div>
+                    </div>
+
+                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                        <div className="attribute">
+                            Local ID
+                        </div>
+                        <div className="display-box2"> 
+                            {props.currentPatron.bsid}
+                            {props.currentPatron.bsid === "" && <div>No ID</div>}
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{display: "flex"}}>
+                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                        <div className="attribute">
+                            Email
+                        </div>
+                        <div className="display-box2"> 
+                            {props.currentPatron.email}
+                            {props.currentPatron.email === "" && <div>No email set</div>}
+                        </div>
+                    </div>
+
+                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                        <div className="attribute">
+                            Phone
+                        </div>
+                        <div className="display-box2"> 
+                            {"(" + props.currentPatron.phone.slice(0, 3) + ") " + props.currentPatron.phone.slice(3, 6) + "-" + props.currentPatron.phone.slice(6)}
+                            {props.currentPatron.phone === "" && <div>No phone set</div>}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="attribute">
+                            Birthday
+                </div>
+                <div className="display-box2"> 
+                    {(props.currentPatron.birthday !== 0) && (
+                        props.currentPatron.getDisplayableBirthday()
+                    )}
+                    {props.currentPatron.birthday === 0 && <div>No birthday set</div>}
+                </div>
+
+                {/**/}
+
+                {/**/}
+
+                <div className="attribute">Address</div>
+                <div className="display-box2"> 
+                    {(props.currentPatron.streetAddress !== "") && props.currentPatron.getDisplayableAddress()}
+                    {props.currentPatron.streetAddress === "" && <div>No address set</div>}
+                </div>
+
+                <div className="divider" style={{marginTop: "0.5em"}}/>
+
+                
+                <div className="attribute">
+                    Notes
+                </div>
+                <div className="display-box2">
+                    {props.currentPatron.notes}
+                    {props.currentPatron.notes === "" && <div>[No notes]</div>}
+                </div>
+
+                {/* <button>Edit</button> */}
+            </div>
+        );
+    };
+
+    /***** UseEffects *****/
+    React.useEffect(() => {
+        if (props.currentPatron.id === "" || props.currentDevice.id === "" || props.currentDevice.status !== "Available") {
+            setCheckoutError(true)
+        }
+        else {
+            setCheckoutError(false);
+        }  
+
+    }, [props.currentPatron, props.currentDevice]);
+
+    React.useEffect(() => {
+        if (returnDate <= checkOutDate) {
+            setConfirmDateValidity(1);
+        }
+        else if (((Math.floor(returnDate.getTime() / 1000)) - defaultReturnDateMinimumTimeDifference) <= (Math.floor(checkOutDate.getTime() / 1000))) {
+            setConfirmDateValidity(2);
+        }
+        else {
+            setConfirmDateValidity(0);
+        }
+    }, [checkOutDate, returnDate])
+
+    /***** Returned Page *****/
+    return (
+        <div style={{height: "100%"}}>
+            <div className="column-wrapper">
+                <div className={"column-left2" + props.columnStylingModifier}>
+                    <div className="header">
+                        <div className="content">
+                            Device
+                        </div>
+
+                        {/* props.currentDevice.status === "Available" because this is the Check Out Device page */}
+                        {(props.currentDevice !== undefined) && (props.currentDevice !== null) && (props.currentDevice.name !== "") && (
+                            <div className="selected-item-display">
+                                <b>Selected:</b> {props.currentDevice.name} {(props.currentDevice.status !== "Available") && "[Unavailable]"}
+                            </div>
+                        )}
+
+                        {((props.currentDevice === undefined) || (props.currentDevice === null) || (props.currentDevice.name === "")) && (
+                            <div className="selected-item-display">
+                                <b>Selected:</b> [No Device Selected]
+                            </div>
+                        )}
+                        
+                        <div className="divider" />
+                    </div>
+                    
+                    <Category 
+                        name="devices" 
+                        showDetailsButton={true} 
+                        highlightSelected={props.currentDevice} 
+                        getItem={props.setCurrentDevice} 
+                        userId={props.userId} 
+                        showDetailsWindow={showDeviceDetails()} 
+                        showDeviceStatus={1} 
+                        itemInfoContainerStyle={props.columnStylingModifier}
+                    />
+                </div>
+                        
+
+                <div className={"column-right2" + props.columnStylingModifier}
+                    // Need some unique styling for this page because it uses Category on both sides
+                    // Other pages don't need this because they don't use Category on the right column
+                    style={{
+                        gridTemplateRows: "0.24fr auto 0.2fr",
+                    }}
+                >
+                    <div className={"header"}>
+                        <div className={"content"}>
+                            Patron
+                        </div>
+
+                        {(props.currentPatron !== undefined) && (props.currentPatron !== null) && (props.currentPatron.fname !== "") && (
+                            <div className="selected-item-display">
+                                <b>Selected:</b> {props.currentPatron.identifier}
+                            </div>
+                        )}
+
+                        {((props.currentPatron === undefined) || (props.currentPatron === null) || (props.currentPatron.fname === "")) && (
+                            <div className="selected-item-display">
+                                <b>Selected:</b> [No Patron Selected]
+                            </div>
+                        )}
+
+                        <div className="divider"></div>
+                    </div>
+
+                    <Category 
+                        name="patrons"
+                        showDetailsButton={true} 
+                        highlightSelected={props.currentPatron} 
+                        getItem={props.setCurrentPatron} 
+                        userId={props.userId} 
+                        addItem={() => {
+                            props.addNewPatron(); 
+                            props.setCurrentPatron(new Patron())
+                        }} 
+                        showDetailsWindow={showPatronDetails()}
+                        itemInfoContainerStyle={props.columnStylingModifier}
+                    />
+
+                    <button className={"checkout-button" + props.columnStylingModifier} 
+                        onClick={(e) => {
+                            e.preventDefault(); 
+                            e.stopPropagation(); 
+                            setConfirmCheckOut(true);}
+                        } 
+                        disabled={checkoutError} 
+                        style={checkoutError ? {
+                            color: "white", 
+                            backgroundColor: "gray", 
+                            cursor: "not-allowed",
+    
+                        } : {
+
+                        } }
+                    >
+                            Check Out
+                    </button>
+                </div>   
+            </div>
+                        
+            
+            <Popup 
+                contentStyle={{
+                    background: "rgba(0,0,0,0.3)", 
+                    border: "1px transparent solid",
+                    height: "100vh",
+                    minHeight: "100vh",
+                    width: "100vw",
+                    display: "flex",
+                }}  
+                open={confirmCheckOut} 
+                onOpen={() => {
+                    setPopupDidLoad(true);
+                }} 
+                onClose={() => {
+                    setConfirmCheckOut(false); 
+                    setPopupDidLoad(false);
+                }} 
+                position="center"
+            >
+                <div className={"checkout" + (props.columnStylingModifier)}>
+                    <div className="title">
+                        <FontAwesomeIcon icon="hand"/> Confirm Check Out
+                    </div>
+                    <div className="divider"/>
+
+
+                    <div className="display-flex">
+                        <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                            <div className="attribute">
+                                Patron
+                            </div>
+                            <div className="display-box2"> 
+                                {props.currentPatron.identifier}
+                                {props.currentPatron.identifier === "" && <div>???</div>}
+                            </div>
+                        </div>
+
+                        <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
+                            <div className="attribute">
+                                Device
+                            </div>
+                            <div className="display-box2"> 
+                                {(props.currentDevice.name !== "") && (
+                                    props.currentDevice.name
+                                )}
+                                {props.currentPatron.name === "" && <div>???</div>}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {(popupDidLoad) && (
+                    <div>
+                        <div className="display-flex">
+                            <div style={{display: "flex", margin: "auto", textAlign: "center"}}>
+                                <div className="datepicker-labels">
+                                    <label htmlFor="checkout-date">
+                                        <div className="desc">
+                                            <span>
+                                                <FontAwesomeIcon icon="calendar" style={{color: "#3A3845", cursor: "not-allowed"}}/> Check Out Date <br/>
+                                            </span>
+                                            <span style={{fontSize: "0.7rem"}}>
+                                                {"MM-DD-YYYY HH:MM XM "}
+
+                                                <Tooltip 
+                                                    title={
+                                                        <React.Fragment>
+                                                            <div style={{fontFamily: "Poppins-EB", textTransform: "uppercase"}}>
+                                                                Time Format
+                                                            </div>
+                                                            <div className={"login-divider"} style={{backgroundColor: "white", height: "0.1em"}}/>
+                                                            <div>
+                                                                <span style={{fontFamily: "Poppins-SB"}}>
+                                                                    Date is based on the Month-Day-Year system. Time is based on a 12 hour system. Seconds are not given. AM or PM is given. <br/> <br/>
+
+                                                                    <b>Example:</b> 11-13-2023 02:30 PM
+                                                                </span>
+                                                            </div>
+                                                        </React.Fragment>
+                                                    }
+                                                    tabIndex={0}
+                                                    enterTouchDelay={0}
+                                                >
+                                                    <FontAwesomeIcon icon="circle-question" style={{color: "#3A3845", cursor: "help"}} /> 
+                                                </Tooltip>
+                                            </span>
+                                        </div>
+                                    </label> 
+                                    <DatePicker 
+                                        renderCustomHeader={({
+                                            date,
+                                            changeYear,
+                                            changeMonth,
+                                            decreaseMonth,
+                                            increaseMonth,
+                                            prevMonthButtonDisabled,
+                                            nextMonthButtonDisabled
+                                        }) => (
+                                            <div style={{margin: 10, display: "flex", justifyContent: "center"}}>
+                                                <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled} className="selectArrowStyle">
+                                                    {<FontAwesomeIcon icon="arrow-left"/>}
+                                                </button>
+                                                    
+                                                <select value={getYear(date)} onChange={({ target: { value } }) => changeYear(value)} className="selectDropdownStyle">
+                                                    {years.map(option => (
+                                                        <option key={option} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                <select value={months[getMonth(date)]} onChange={({target: {value}}) => changeMonth(months.indexOf(value))} className="selectDropdownStyle">
+                                                    {months.map(option => (
+                                                        <option key={option} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                <button onClick={increaseMonth} disabled={nextMonthButtonDisabled} className="selectArrowStyle">
+                                                    {<FontAwesomeIcon icon="arrow-right"/>}
+                                                </button>
+                                            </div> 
+                                            )
+                                        }
+                                        dateFormat="MM-dd-yyyy hh:mm a"
+                                        selected={checkOutDate}  
+                                        onChange={((newDate) => {
+                                                if (newDate !== undefined && newDate !== null) {
+                                                    setCheckOutDate(newDate);
+                                                }
+                                            })}
+                                        showTimeSelect
+                                        timeFormat="hh:mm a"
+                                        timeIntervals={60}
+                                        className="illuminated-picker" // is this even used
+                                        preventOpenOnFocus={true}
+                                        ref={checkOutDatePickerRef}
+                                        onKeyDown={handleCheckOutOnKeyDown}
+                                        />
+                                </div>
+                            </div>
+
+                            <div style={{display: "flex", margin: "auto", textAlign: "center"}}>
+                                <div className="datepicker-labels">
+                                    <label htmlFor="return-date">
+                                        <div className="desc">
+                                        <span>
+                                            <FontAwesomeIcon icon="calendar" style={{color: "#3A3845", cursor: "not-allowed"}}/> Return Date <br/>
+                                        </span>
+                                        <span style={{fontSize: "0.7rem"}}>
+                                                {"MM-DD-YYYY HH:MM XM "}
+
+                                                <Tooltip 
+                                                    title={
+                                                        <React.Fragment>
+                                                            <div style={{fontFamily: "Poppins-EB", textTransform: "uppercase"}}>
+                                                                Time Format
+                                                            </div>
+                                                            <div className={"login-divider"} style={{backgroundColor: "white", height: "0.1em"}}/>
+                                                            <div>
+                                                                <span style={{fontFamily: "Poppins-SB"}}>
+                                                                    Date is based on the Month-Day-Year system. Time is based on a 12 hour system. Seconds are not given. AM or PM is given. <br/> <br/>
+
+                                                                    <b>Example:</b> 11-13-2023 02:30 PM
+                                                                </span>
+                                                            </div>
+                                                        </React.Fragment>
+                                                    }
+                                                    tabIndex={0}
+                                                    enterTouchDelay={0}
+                                                >
+                                                    <FontAwesomeIcon icon="circle-question" style={{color: "#3A3845", cursor: "help"}} /> 
+                                                </Tooltip>
+                                            </span>
+                                        </div>
+                                    </label>
+                                    <DatePicker 
+                                        renderCustomHeader={({
+                                            date,
+                                            changeYear,
+                                            changeMonth,
+                                            decreaseMonth,
+                                            increaseMonth,
+                                            prevMonthButtonDisabled,
+                                            nextMonthButtonDisabled
+                                        }) => (
+                                            <div style={{margin: 10, display: "flex", justifyContent: "center"}}>
+                                                <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled} className="selectArrowStyle">
+                                                    {<FontAwesomeIcon icon="arrow-left"/>}
+                                                </button>
+                                                    
+                                                <select value={getYear(date)} onChange={({ target: { value } }) => changeYear(value)} className="selectDropdownStyle">
+                                                    {years.map(option => (
+                                                        <option key={option} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                <select value={months[getMonth(date)]} onChange={({target: {value}}) => changeMonth(months.indexOf(value))} className="selectDropdownStyle">
+                                                    {months.map(option => (
+                                                        <option key={option} value={option}>
+                                                            {option}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                <button onClick={increaseMonth} disabled={nextMonthButtonDisabled} className="selectArrowStyle">
+                                                    {<FontAwesomeIcon icon="arrow-right"/>}
+                                                </button>
+                                            </div> 
+                                            )
+                                        }
+                                        dateFormat="MM-dd-yyyy hh:mm a"
+                                        selected={returnDate} 
+                                        onChange={((newDate) => {
+                                            if (newDate !== undefined && newDate !== null) {
+                                                setReturnDate(newDate);
+                                            }
+                                        })}
+                                        showTimeSelect
+                                        timeFormat="hh:mm a"
+                                        timeIntervals={60}
+                                        className="illuminated-picker"
+                                        preventOpenOnFocus={true}
+                                        ref={returnDatePickerRef}
+                                        onKeyDown={handleReturnOnKeyDown}
+                                        />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="confirm-date-error">
+                            {confirmDateValidity === 0 ? "" : validateConfirmDate()}
+                        </div>
+
+                        <div className="divider"/>
+
+                        <div style={{display: "flex", marginTop: "1em"}}>
+                            <button 
+                                className="button2--cancel" 
+                                onClick={() => {
+                                    setCheckOutDate(defaultCheckOutDate);
+                                    setReturnDate(defaultReturnDate);
+                                    setConfirmCheckOut(false)
+                                }}
+                            >
+                                Cancel
+                            </button>
+
+                            {(confirmDateValidity === 0) && (
+                                <button 
+                                    className="button2" 
+                                    onClick={() => {
+                                        checkOut(checkOutDate, returnDate)
+                                    }}
+                                >
+                                    Confirm
+                                </button> 
+                            )}
+
+
+                            {(confirmDateValidity !== 0) && (
+                                <button 
+                                    className="button2--disabled2" 
+                                    disabled={true}
+                                    onClick={() => {}}
+                                >
+                                    Confirm
+                                </button> 
+                            )}
+
+                               
+                        </div>
+                    </div>
+                    )}
+
+                </div>
+            </Popup>
+        </div>
+        
+    );
+};
+
+export default CheckOutDevice;

@@ -1,0 +1,136 @@
+@use '../../variables';
+
+// IDs
+#home {
+    height: 89vh;
+}
+
+@mixin location {
+    padding: 7px 7px 7px 7px !important;
+    font-family: variables.$font-normal !important;
+    border: none !important;
+    outline: none !important;
+    
+    &:hover {
+        border: none !important;
+        outline: none !important;
+    }
+}
+
+#home-location {
+    @include location;
+}
+
+#current-location {
+    @include location;
+}
+
+// Classes
+.container {
+    background-color: transparent;
+    border-radius: 10px;
+    border: variables.$accent-light 2px solid;
+    height: auto;
+    margin: 1em 1em 1em 1em;
+    padding: 0.5em;
+    width: auto;
+
+    .inner {
+        background-color: transparent;
+        border-radius: 10px;
+        border: variables.$accent-light 2px solid;
+        border-bottom: 0;
+        height: auto;
+        margin: 1em 1em 1em 1em;
+        width: auto;
+        overflow-y: scroll;
+
+        .list-header {
+            background-color: variables.$primary-dark;
+            color: white;
+            font-family: "Poppins-SB";
+        }
+
+        .list-element {
+            background-color: transparent;
+            cursor: pointer;
+            font-family: variables.$font-normal;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background-color: variables.$primary-light-1
+            }
+        }
+    }
+}
+
+.divider {
+    background-color: variables.$accent-light;
+    height: 0.1em;
+    position: relative;
+}
+
+.subtext {
+    color: variables.$primary-dark;
+    font-family: variables.$font-normal;
+    font-size: 1em;
+
+    .link {
+        color: variables.$primary-light-2;
+        cursor: pointer;
+        font-family: variables.$font-semibold;
+        font-size: 1em;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: variables.$secondary-light-2;
+        }
+    }
+}
+
+.subtitle {
+    color: variables.$primary-dark;
+    font-family: variables.$font-semibold;
+    font-size: 1em;
+    text-transform: uppercase;
+
+    .organization {
+        font-family: variables.$font-bold;
+    }
+}
+
+.title {
+    color: variables.$primary-dark;
+    font-family: variables.$font-semibold;
+    font-size: 2em;
+
+    .button2 {
+        @mixin button2--base {
+            @include variables.button-base;
+            font-size: 0.7em;
+            margin: auto;
+            padding: auto;
+
+            &:focus-visible {
+                outline: variables.$focus-styling;
+            }
+
+            &:hover {
+                background-color: variables.$secondary-light-2;
+            }
+        }
+
+        &--left {
+            @include button2--base;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: 1px solid variables.$accent-light;
+        }
+
+        &--right {
+            @include button2--base;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+    }
+}
