@@ -1,0 +1,21 @@
+{
+    "authorization_error_responses":
+    {
+	"invalid_request":"The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.",
+	"invalid_scope":"The scope requested is invalid for the token provided.",
+	"invalid_signature":"The token's signature does not match the signature provided as part of the token.",
+	"expired_signature":"The token has expired.",
+	"invalid_audience":"This Ark is not the intended audience of the token and cannot validate it.",
+	"invalid_issuer":"The token provided was not issued by Blacklight and cannot be validated.",
+	"server_error":"The server is unable to complete the request at this time."
+    },
+    "error_augments":
+    {
+	"invalid_request": {
+	    "_no_token":"No access token provided.",
+	    "_malformed_token":"The token provided is malformed and cannot be validated.",
+		"_access_denied":"The token provided does not have permission to access the requested resource.",
+		"_missing_file":"The server expected a file upload, but no file was provided."
+	}
+    }
+}

@@ -1,0 +1,13 @@
+# See https://docs.gunicorn.org/en/stable/settings.html
+# import multiprocessing
+
+user = 'nginx'
+certfile = '/home/klthelen/Senna/Prod/ssl/cer.pem'
+keyfile = '/home/klthelen/Senna/Prod/ssl/key.key'
+
+wsgi_app = 'wsgi:app'
+
+bind = 'localhost:6002'
+reload = True
+
+

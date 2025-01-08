@@ -1,0 +1,73 @@
+from flask import Flask, jsonify, request, abort, flash
+
+app = Flask(__name__)
+
+from routes.operator import switchboard_operator
+from routes.patron import patron
+from routes.tutor import tutor
+from routes.zoom import zoom
+
+import json
+import sys
+import mariadb
+from lib.ark_parameters import *
+
+
+# Test requests
+@app.route("/tt", methods=["POST"])
+def tt():
+    """ PEP 8 """
+    print(ArkParameters(request).validate_auth())
+    return jsonify("ok")
+    
+    
+@app.route("/testreq", methods=["POST"])
+def testreq():
+    """ PEP 8 """
+    try:
+        # Database connection
+        conn = mariadb.connect(
+            host = data["host"],
+            port = data["port"],
+            user = data["user"],
+            password = data["password"],
+            database = data["database"]
+        )
+        cur = conn.cursor()
+
+        # Lookup phone number to get Patron's account ID
+        user_id = request.json['u_id']
+        op_code = "SUCCESS"
+        cur.execute("SELECT patron_id FROM patron_roster WHERE phone=?", (user_id,))
+        lookup = cur.fetchone()[0]
+               
+        if not lookup:
+            op_code = "ERR_PHONE_NOT_FOUND"
+        else:
+            # If user account does exist, insert valid request
+            cur.close()
+            cur = conn.cursor()
+            cur.execute("INSERT INTO requests (patron_id) VALUES (?)", (lookup,))
+                          
+        # Close Database connection and return data
+        cur.close()
+        conn.commit()
+        conn.close()
+        return jsonify(op_code)
+    except Exception as err:
+        print(err, file=sys.stderr)
+        conn.rollback()
+        sys.exit(1)
+
+app.register_blueprint(switchboard_operator)
+app.register_blueprint(patron)
+app.register_blueprint(tutor)
+app.register_blueprint(zoom)
+
+
+##### NOTES #####
+    # Check status of "ticket"
+    # NOTE:
+    #  can be done like this:
+    #  curl -X GET -H "Content-type: application/json" -d '{"u_id":5178993528}' https://illuminated.cs.mtu.edu:5000/cli/con
+    # content body not allowed in get anymore apparently
