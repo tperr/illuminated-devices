@@ -1,0 +1,29 @@
+{
+    "authorization_error_responses":
+    {
+	"invalid_request":"The request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once, or is otherwise malformed.",
+	"unauthorized_client":"The client is not authorized to request an authorization code using this method.",
+	"access_denied":"The resource owner or authorization server denied the request.",
+	"unsupported_response_type":"The authorization server does not support obtaining an authorization code using this method.",
+	"invalid_scope":"The requested scope is invalid, unknown, or malformed.",
+	"server_error":"The authorization server encountered an unexpected condition that prevented it from fulfilling the request.",
+	"temporarily_unavailable":"The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server.",
+	"invalid_token":"The token provided is invalid or expired.",
+	"logout_request":"Logout successful."
+    },
+    "error_augments":
+    {
+	"invalid_request": {
+	    "_code_challenge":"Code challenge required but was not provided.",
+	    "_transformation":"The transform algorithm provided is not supported by the server.",
+	    "_ark_credentials":"Ark credentials invalid, the request cannot be completed.",
+	    "_no_ark_auth":"Ark authentication is required but was not provided.",
+	    "_no_access_token":"An access token to authenticate is required but was not provided.",
+		"_invalid_refresh_token":"The refresh token was either not provided or is invalid.",
+	    "_no_scope":"The requested scope for the access token is required but was not provided."
+	},
+	"invalid_token": {
+		"_no_refresh_token":"The refresh token has expired or was not provided."
+	}
+    }
+}

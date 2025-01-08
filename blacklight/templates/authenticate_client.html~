@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Client Authentication{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="client_id">Client ID</label>
+    <input name="client_id" id="client_id" required>
+    <br>
+    <label for="redirect_uri">Redirect URI</label>
+    <input type="redirect_uri" name="redirect_uri" id="redirect_uri" required>
+    <br>
+    <label for="response_type">Response Type</label>
+    <input type="response_type" name="response_type" id="response_type" required>
+    <br>
+    <label for="scope">Scope</label>
+    <input type="scope" name="scope" id="scope" required>
+    <br>
+    <label for="code_challenge_method">Code Challenge Method</label>
+    <input type="code_challenge_method" name="code_challenge_method" id="code_challenge_method" required>
+    <br>
+    <label for="code_challenge">Code Challenge</label>
+    <input type="code_challenge" name="code_challenge" id="code_challenge" required>
+    <input type="submit" value="Authenticate">
+  </form>
+{% endblock %}

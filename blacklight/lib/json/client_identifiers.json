@@ -1,0 +1,22 @@
+{
+    "app": {
+	"key":"5cc0960980596e0d275ab998134c6aff"
+    },
+
+	"aud":"MTU Ark Prototype",
+	"iss":"illuminated.cs.mtu.edu",
+    
+    "ark": {
+	"id":99769792512131075,
+	"secret":"3AC9BF93CC1A610CD1760A54F83E293843F6BCB06E96C29DE03125796C34943A",
+	"base_auth":"OTk3Njk3OTI1MTIxMzEwNzU6M0FDOUJGOTNDQzFBNjEwQ0QxNzYwQTU0RjgzRTI5Mzg0M0Y2QkNCMDZFOTZDMjlERTAzMTI1Nzk2QzM0OTQzQQ==",
+	"authorization":"OTk3Njk3OTI1MTIxMzEwNzU6M0FDOUJGOTNDQzFBNjEwQ0QxNzYwQTU0RjgzRTI5Mzg0M0Y2QkNCMDZFOTZDMjlERTAzMTI1Nzk2QzM0OTQzQQ"
+    },
+    "jwk":
+    {
+	"kty":"RSA",
+	"alg":"ES256",
+	"public_key":"MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEwdAp45zucv5loYRaJABRRpdd5GEj55c6qoLA0RRyoMWe8JayaoR2+I0VrTxhUNZN4Vph6VeTDzPi95NwcJqohg==",
+	"private_key":"MHQCAQEEICWgva5lMcdTlIR/UbZA56wWzCt84kCwbNYzvkk7/ASwoAcGBSuBBAAKoUQDQgAEwdAp45zucv5loYRaJABRRpdd5GEj55c6qoLA0RRyoMWe8JayaoR2+I0VrTxhUNZN4Vph6VeTDzPi95NwcJqohg=="
+    }
+}

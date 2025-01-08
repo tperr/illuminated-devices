@@ -1,0 +1,28 @@
+DELIMITER //
+USE blacklight //
+CREATE OR REPLACE FUNCTION BIN_TO_UUID(b BINARY(16), f BOOLEAN) RETURNS CHAR(36)
+DETERMINISTIC
+BEGIN
+        DECLARE hex CHAR(36);
+	SET hex = HEX(b);
+   	RETURN LOWER(CONCAT(
+        IF(f,SUBSTR(hex, 9, 8),SUBSTR(hex, 1, 8)), '-',
+        IF(f,SUBSTR(hex, 5, 4),SUBSTR(hex, 9, 4)), '-',
+        IF(f,SUBSTR(hex, 1, 4),SUBSTR(hex, 13, 4)), '-',
+        SUBSTR(hex, 17, 4), '-',
+        SUBSTR(hex, 21)
+    	));
+END //
+
+CREATE OR REPLACE FUNCTION UUID_TO_BIN(uuid CHAR(36), f BOOLEAN) RETURNS BINARY(16)
+DETERMINISTIC
+BEGIN
+        RETURN UNHEX(CONCAT(
+	IF(f,SUBSTRING(uuid, 15, 4),SUBSTRING(uuid, 1, 8)),
+	SUBSTRING(uuid, 10, 4),
+	IF(f,SUBSTRING(uuid, 1, 8),SUBSTRING(uuid, 15, 4)),
+	SUBSTRING(uuid, 20, 4),
+	SUBSTRING(uuid, 25))
+	);
+END //
+DELIMITER ;
