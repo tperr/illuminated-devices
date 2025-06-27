@@ -79,6 +79,7 @@ const Profile = () => {
     const [organizationLocationList, setOrganiationLocationList] = useState([]);
 
     useEffect(() => {
+        return;
         getOrganizationLocations(userId)
             .then((response) => { 
                 // Move Organization account to 0th index [O(n)]

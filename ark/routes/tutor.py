@@ -210,7 +210,7 @@ def update_patron_note():
     db = Ark()
 
     patron_notes = request.json['notes']
-    #print(patron_notes)
+    print(patron_notes)
     payload = db.tutor_update_patron_note(patron_notes)
     
     return jsonify({"STATUS": payload})

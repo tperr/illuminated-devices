@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "./TutorChat.scss";
 import PatronNotes from "./PatronNotes";
-import Patron from "../Device/iPad/Patron/Patron";
 
 async function sendMessage(from, to, msg) {
   const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/send_chat";
@@ -104,6 +103,8 @@ const TutorChat = (props) =>
       } else {
         setSelectedTutor(tutorTabExists);
       }
+      setNoting(false);
+      //chatbox.current.focus();
     }
 
     const closeChat = (tutor) => {
@@ -129,22 +130,68 @@ const TutorChat = (props) =>
       }
     }, [props.tutors])
 
-    return ( 
-      <div style={{ height: "100%" }}>
-        {Object.keys(props.tutors).length === 0 /* || props.meetingId === undefined */ && (
-          <div style={{textAlign: "center"}}> There are no other tutors online </div>
-        )}
+    useEffect(() => {
+      if (!props.meetingId)
+        setNoting(false);
+      else if (props.meetingId && !noting) {
+        setNoting(true);
+        setSelectedTutor(undefined);
+      }
+    }, [props.meetingId])
 
-        {(Object.keys(props.tutors).length !== 0 && selectedTutor === undefined) /* || props.meetingId !== undefined */ && (
-          <div className="chat-section">
-            <div className="chat-box-content">
-              <div className="tabs-list">
-                <ul className="tabs">
+    return ( 
+      <div style={{height: '45vh'}}>
+
+        <div className="chat-section">
+          <div className="chat-box-content">
+            <div className="tabs-list">
+              <ul className="tabs">
+                { openChats.length === 0 && !props.meetingId && (
                   <li className="chat-tab active-tab">
                     <div style={{ paddingLeft: "100px" }}>&nbsp;</div>
                   </li>
-                </ul>
+                )}
+
+                { props.meetingId && (
+                    <li key={"PN"} className={noting ? "active-tab" : "inactive-tab"} onClick={() => {setNoting(true); setSelectedTutor(undefined);}}>
+                      <FontAwesomeIcon icon="fa-solid fa-comments" />
+                      <div style={{ paddingLeft: "100px" }}>Notes</div>
+                    </li>
+                  )}
+                {/* { openChats.length !== 0 && (
+                  <li className="chat-tab active-tab">
+                    <div style={{ paddingLeft: "100px" }}>&nbsp;</div>
+                    <button className="close-chat" onClick={() => {setSelectedTutor(undefined); setOpenChats([]); setNoting(false)}}><FontAwesomeIcon icon="fa-solid fa-xmark" /></button>
+                  </li>
+                )} */}
+                {openChats.length !== 0 && openChats.map((tutor) => {
+                  console.log(tutor, props.tutors, selectedTutor);
+                  console.log(props.tutors[tutor[0]]);
+                    return (
+                      <li
+                        key={tutor[0]}
+                        className={selectedTutor && tutor[0] === selectedTutor[0] ? "active-tab" : "inactive-tab"}
+                        onClick={() => openChat(props.tutors[tutor[0]][0])}
+                      >
+                        <button className="close-chat" onClick={(e) => { e.stopPropagation(); closeChat(props.tutors[tutor[0]][0])}}><FontAwesomeIcon icon="fa-solid fa-xmark" /></button>
+                        {tutor[1]} {tutor[2]}
+                      </li>
+                    );
+                })}
+              </ul>
+            </div>
+            { noting && (
+              <div className="chat-box-wrapper">
+                <PatronNotes
+                  inMeeting={true}
+                  patron={props.patron}
+                  setPatron={props.setPatron}
+                  patronNotes={props.patronNotes}
+                  setPatronNotes={props.setPatronNotes}
+                />
               </div>
+            )}
+            {selectedTutor === undefined && !noting && (
               <div className="chat-box-wrapper">
                 <div className="messagebox" />
                 <div className="chat-flex"> 
@@ -152,97 +199,8 @@ const TutorChat = (props) =>
                   <button disabled className="send-button-disabled" onClick={sendChat}>send</button>
                 </div>
               </div>
-            </div>
-
-            <div className="chat-tutor-list">
-
-                {props.meetingId !== undefined &&
-                  <div className="chat-tutor" onClick={()=> {setNoting(true); console.log(noting)}}>
-                    <FontAwesomeIcon icon="fa-solid fa-comments" />
-                    <div className="chat-tutor-name" >PN Holder</div>
-                  </div>
-                }
-
-                {Object.keys(props.tutors).filter((tutor) => {
-                  return tutor !== userId;
-                })
-                .map((tutor) => {
-                  return (
-                    <div className="chat-tutor" key={props.tutors[tutor][0]} onClick={() => openChat(props.tutors[tutor][0])}>
-                      
-                      {/* {props.availTutors.includes(tutor) && (
-                        <FontAwesomeIcon icon="fa-solid fa-comments" />
-                      )}
-                      {!props.availTutors.includes(tutor) && (
-                        <FontAwesomeIcon icon="fa-solid fa-message" />
-                      )} */}
-                     
-                      
-                      {/* {props.tutors[tutor][8] && (
-                        <FontAwesomeIcon icon="fa-solid fa-comments" />
-                      )}
-                      {!props.tutors[tutor][8] && (
-                        <FontAwesomeIcon icon="fa-solid fa-message" />
-                      )} */}
-
-                      {/* {props.tutors[tutor][0][8] && (
-                        <FontAwesomeIcon icon="fa-solid fa-comments" />
-                      )}
-                      {!props.tutors[tutor][0][8] && (
-                        <FontAwesomeIcon icon="fa-solid fa-message" />
-                      )} */}
-                     
-
-                      <FontAwesomeIcon icon="fa-solid fa-message" />
-                     
-                      <div className="chat-tutor-name">{props.tutors[tutor][0][1]} {props.tutors[tutor][0][2]}</div>
-                    </div>
-                  );
-                })}
-               
-            </div>            
-          </div>
-        )}
-
-        {selectedTutor === undefined && noting && (
-          <div className="chat-section">
-            <div className="chat-box-content">
-              <div className="tabs-list">
-                <ul className="tabs">
-                  <li
-                    key={"PN"}
-                    className={noting ? "active-tab" : "inactive-tab"}
-                  >
-                    <button className="close-chat" onClick={() => { setNoting(false)}}><FontAwesomeIcon icon="fa-solid fa-xmark" /></button>
-                  </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        )}
-
-        {selectedTutor !== undefined && (
-          <div className="chat-section">
-            <div className="chat-box-content">
-              <div className="tabs-list">
-                <ul className="tabs">
-                  {openChats.length !== 0 && openChats.map((tutor) => {
-                    return (
-                      <li
-                        key={tutor[0]}
-                        className={tutor[0] === selectedTutor[0] ? "active-tab" : "inactive-tab"}
-                        onClick={() => openChat(props.tutors[tutor[0]][0])}
-                      >
-                        {selectedTutor[0] === tutor[0] && ( 
-                          <button className="close-chat" onClick={(e) => { e.stopPropagation(); closeChat(props.tutors[tutor[0]][0])}}><FontAwesomeIcon icon="fa-solid fa-xmark" /></button>
-                        )}
-                        {tutor[1]} {tutor[2]}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-
+            )}
+            { selectedTutor !== undefined && !noting && (
               <div className="chat-box-wrapper">
                 {/***** MESSAGES WITH SELECTED TUTOR *****/}
                 {props.tutors[selectedTutor[0]] !== undefined &&
@@ -286,46 +244,61 @@ const TutorChat = (props) =>
                   </div>
                 )}
 
-                {props.tutors[selectedTutor[0]] === undefined && noting && (
-                    <PatronNotes
-                      patron={props.patron} 
-                      setPatron={props.setPatron} 
-                      updateNote={() => {props.updatePatronNotes(props.patronNotes)}} 
-                      patronNotes={props.patronNotes}
-                      setPatronNotes={props.setPatronNotes}
-                    />
-                )}
-
                 <div className="chat-flex"> 
                   <TextField noValidate inputRef={chatbox} /*InputLabelProps={{ shrink: false }}*/ className="yapper" onKeyDown={handleKeypress} label="Chat here..." variant="outlined" ></TextField>
                   <button className="send-button" onClick={sendChat}>send</button>
                 </div>
               </div>
-            </div>
+            )}
+          </div>
 
-            <div className="chat-tutor-list">
+          <div className="chat-tutor-list">
+              {/* {props.meetingId !== undefined &&
+                <div className="chat-tutor" onClick={()=> {setNoting(true); }}>
+                  <FontAwesomeIcon icon="fa-solid fa-comments" />
+                  <div className="chat-tutor-name" >Notes</div>
+                </div>
+              } */}
+
               {Object.keys(props.tutors).filter((tutor) => {
                 return tutor !== userId;
               })
               .map((tutor) => {
                 return (
-                  <div className="chat-tutor" key={props.tutors[tutor][0][0]} onClick={() => openChat(props.tutors[tutor][0])}>
+                  <div className="chat-tutor" key={props.tutors[tutor][0]} onClick={() => openChat(props.tutors[tutor][0])}>
+                    
+                    {/* {props.availTutors.includes(tutor) && (
+                      <FontAwesomeIcon icon="fa-solid fa-comments" />
+                    )}
+                    {!props.availTutors.includes(tutor) && (
+                      <FontAwesomeIcon icon="fa-solid fa-message" />
+                    )} */}
+                    
+                    
+                    {/* {props.tutors[tutor][8] && (
+                      <FontAwesomeIcon icon="fa-solid fa-comments" />
+                    )}
+                    {!props.tutors[tutor][8] && (
+                      <FontAwesomeIcon icon="fa-solid fa-message" />
+                    )} */}
+
                     {/* {props.tutors[tutor][0][8] && (
                       <FontAwesomeIcon icon="fa-solid fa-comments" />
                     )}
                     {!props.tutors[tutor][0][8] && (
                       <FontAwesomeIcon icon="fa-solid fa-message" />
                     )} */}
+                    
 
                     <FontAwesomeIcon icon="fa-solid fa-message" />
+                    
                     <div className="chat-tutor-name">{props.tutors[tutor][0][1]} {props.tutors[tutor][0][2]}</div>
                   </div>
                 );
               })}
-            </div>
-
-          </div>
-        )}
+              
+          </div>            
+        </div>
       </div>
     );
 }

@@ -94,6 +94,7 @@ def authenticate():
         # Authenticate client
         db = Blacklight()
         code = db.authenticate_client(client_id, redirect_uri)
+
         # return {"id":client_id, "r": redirect_uri}
         if code != 'authorized_client':
             return BlacklightError("unauthorized_client").get_respondable_json()
@@ -141,6 +142,7 @@ def api_login():
     # Split token from header
     token = [x.strip() for x in header.split("Basic")][1]
     # Check client's grant
+    print("\n\nStuff goes here:", request.json, "\n\n")
     grant = request.json["grant"]
 
     try:
@@ -289,6 +291,7 @@ def refresh_token():
 
     Note that the refresh token cookie should be httpOnly and strictly same-site. 
     """
+    print("Refresh Token")
     try:
         refresh_token = request.cookies.get("refresh_token")
         if refresh_token is not None:

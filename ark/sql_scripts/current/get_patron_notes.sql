@@ -20,7 +20,7 @@ CREATE OR REPLACE PROCEDURE get_patron_notes(p_id_as_hex VARBINARY(36))
             patron_notes  
         WHERE
             patron_id = p_id  
-        ORDER BY note_date;
+        ORDER BY note_date DESC;
 
         END;
 END //

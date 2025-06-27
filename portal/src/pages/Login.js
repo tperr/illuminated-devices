@@ -43,7 +43,7 @@ async function sendLoginRequest(creds) {
     code_challenge[2] = createChallenge(code_challenge[1]);
 
     const fullAddr = `${baseAddr}?response_type=${response_type}&redirect_uri=${encodeURIComponent(redirect_uri)}&client_id=${clientID}&code_challenge=${code_challenge[2]}&code_challenge_method=${code_challenge_method}`;
-
+    console.log(fullAddr)
     let auth_grant;
 
     try {
@@ -71,6 +71,7 @@ async function sendLoginRequest(creds) {
     const apiLoginAddr = "https://illuminated.cs.mtu.edu/blacklight/api/client_login";
     var return_code = false;
     var client_redirect_uri = null;
+
     await fetch(apiLoginAddr, {
         method: 'POST',
         redirect: 'follow', // This straight up does nothing I think but it works so I left it

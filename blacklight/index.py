@@ -4,6 +4,7 @@ import json
 
 app = Flask(__name__, root_path='/var/www/blacklight')
 
+
 # Key
 #SECRET_KEY = json.load(open('./lib/json/client_identifiers.json'))['app']['key']
 #app.secret_key = SECRET_KEY
@@ -14,7 +15,19 @@ import sys
 import mariadb
 from lib import *
 
+import logging
+
+logging.basicConfig(filename='/var/www/blacklight/blight.log', level=logging.DEBUG, 
+                    format='%(asctime)s %(levelname)s %(name)s %(message)s')
+logger=logging.getLogger(__name__)
+#logger.addFilter(NoPingPongFilter)
+
+sys.stderr.write = logger.error
+sys.stdout.write = logger.debug
+
 app.register_blueprint(auth, url_prefix='/blacklight/')
+
+print("Starting Blacklight...")
 
 # Test route 1
 @app.route("/t", methods=["GET"])

@@ -734,7 +734,8 @@ const ProfileManagement = (props) => {
                                 e.preventDefault(); 
                                 e.stopPropagation(); 
                                 if(editPatron) {
-                                    if ((props.currentPatron.identifier !== fieldPatronName) || (props.currentPatron.bsid !== fieldLocalId) || (props.currentPatron.birthday !== fieldPatronUnixBirthday) || (props.currentPatron.email !== fieldPatronEmail) || (props.currentPatron.phone !== fieldPatronPhone) || (props.currentPatron.getDisplayableAddress() !== (fieldPatronStreet + ", " + fieldPatronCity + ", " + fieldPatronState + ", " + fieldPatronZip) || (props.currentPatron.notes !== fieldPatronNotes))) {
+                                    // does it anyway
+                                    if (true || (props.currentPatron.identifier !== fieldPatronName) || (props.currentPatron.bsid !== fieldLocalId) || (props.currentPatron.birthday !== fieldPatronUnixBirthday) || (props.currentPatron.email !== fieldPatronEmail) || (props.currentPatron.phone !== fieldPatronPhone) || (props.currentPatron.getDisplayableAddress() !== (fieldPatronStreet + ", " + fieldPatronCity + ", " + fieldPatronState + ", " + fieldPatronZip) || (props.currentPatron.notes !== fieldPatronNotes))) {
                                         setConfirmPatronManagement(true);
                                     } 
                                     else {
@@ -773,7 +774,7 @@ const ProfileManagement = (props) => {
                                     if (fieldLocalId === "") {
                                         errorNumber += 1;
                                     }
-                                    if (errorNumber > 0) {
+                                    if (errorNumber > 0 && false) { // currently disabled
                                         setFieldStylesChange(errorNumber);
                                     }
                                     else {
@@ -790,7 +791,7 @@ const ProfileManagement = (props) => {
                 )}
             
             {/* Edit Patron Popup */}
-            <Popup contentStyle={{backgroundColor: "transparent", border: "1px transparent solid"}} open={confirmPatronManagement} onOpen={() => {console.log("patron management opened")}} onClose={() => {setConfirmPatronManagement(false); }} position="center">
+            <Popup contentStyle={{backgroundColor: "transparent", border: "1px transparent solid"}} open={confirmPatronManagement} onClose={() => {setConfirmPatronManagement(false); }} position="center">
                 <div className="checkout">
                     <div className="title">
                         <FontAwesomeIcon icon="hand"/> Confirm Patron Management

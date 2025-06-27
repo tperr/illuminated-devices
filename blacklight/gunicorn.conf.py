@@ -3,8 +3,8 @@
 
 user = 'nginx'
 #user = 'klthelen'
-certfile = '/etc/ssl/certs/bundle.crt'
-keyfile = '/etc/ssl/private/key.key'
+# certfile = '/etc/ssl/certs/bundle.crt'
+# keyfile = '/etc/ssl/private/key.key'
 
 wsgi_app = 'wsgi:app'
 

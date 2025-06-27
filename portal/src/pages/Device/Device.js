@@ -1,9 +1,7 @@
 import React, {useContext, useState, useEffect} from "react";
 import { io } from "socket.io-client";
 import { UserContext } from "../../App.js";
-import IPad from "./iPad/iPad.js";
-import Desktop from "./Desktop/Desktop.js";
-import Patron from "./iPad/Patron/Patron.js";
+import Desktop from "./Desktop.js";
 
 import Category from "../OrganizationHome/components/Category.js";
 
@@ -39,17 +37,14 @@ async function getDeviceInfo(id) {
 }
 
 async function joinMeeting(id) {
-    const fullAddr = "https://illuminated.cs.mtu.edu/ark/patron/get_meeting_info";
+    const fullAddr = "https://illuminated.cs.mtu.edu/ark/patron/get_meeting_info/" + id;
 	const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
     let response = await fetch(fullAddr, {
-		method: 'POST',
+		method: 'GET',
 		headers: {
 			'Authorization': authorization,
 			'Content-type': 'application/json',
 		},
-        body: JSON.stringify({
-            "id": id
-        },)
 	})
 	.then(response => {
 		if (response.ok) {
@@ -75,6 +70,8 @@ const Device = () =>
     const [patronId, setPatronID] = useState();
     const [isIpad, setIsIpad] = useState();
     const [deviceId, setDeviceID] = useState("id");
+    const [deviceName, setDeviceName] = useState("");
+    const [patronName, setPatronName] = useState("");
 
     const [joiningMeeting, setJoiningMeeting] = useState(false);
     const [waitingForMeeting, setWaitingForMeeting] = useState(true);
@@ -113,8 +110,9 @@ const Device = () =>
             setCurrentState(states.CheckCheckedOut);
 
     }, [patronId]);
-
-
+    useEffect(() => {
+        console.log("Meeting ID: ", meetingId);
+    }, [meetingId])
 
     function socketSetup(pId) {
         const socket = io({
@@ -164,7 +162,8 @@ const Device = () =>
         });
 
         socket.on("patron_join_tutor", (data) => {
-            joinMeeting(meetingId).then((response) =>{
+            console.log(data)
+            joinMeeting(data["m_id"]).then((response) =>{
                 //console.log("jonied meeting",)
                 setJoiningMeeting(true);
                 setWaitingForMeeting(false);
@@ -224,7 +223,7 @@ const Device = () =>
         setSelectedDevice(device);
         setPatronID(device.patronId);
         setDeviceID(device.id);
-        localStorage.setItem(JSON.stringify(userId), JSON.stringify(device.id))
+        localStorage.setItem(JSON.stringify(userId), JSON.stringify(device.id));
     }
 
     if (userId) {
@@ -240,9 +239,12 @@ const Device = () =>
                 setDeviceID(dId);
                 getDeviceInfo(dId)
                 .then((response) => {
-                    //console.log(response[0]);
+                    console.log(response);
                     setIsIpad(response[0][4]);
                     setPatronID(response[0][1]); // if null/undefined not checked out
+                    setDeviceName(response[0][2]);
+                    setPatronName(response[0][5] + " " + response[0][6]);
+
                    
                 })
                 .catch((e) => {
@@ -257,7 +259,7 @@ const Device = () =>
         case states.SelectCreateDevice: // 1
             return (
                 <div className="assign-page">
-                    <h2>This device has not been assigned to a patron... <br></br> Please choose an option below:</h2>
+                    <h2>This device has not been set up... <br></br> Please choose an option below:</h2>
                     <div className="assign-button-horiz">
                         <button className="assign-button" onClick={() => setCurrentState(states.SelectDevice)}>Assign to existing device</button>
                         <button className="assign-button-green" onClick={() => {setCurrentState(states.CreateDevice)}}>Assign to new device</button>
@@ -268,8 +270,9 @@ const Device = () =>
         case states.CreateDevice: // 2
             return (
                 <CreateDevice
-                    forward={(device) => {setCurrentState(states.CheckCheckedOut); updateSelectedDevice(device)}}
+                    forward={(device) => {updateSelectedDevice(device); window.location.reload()}}
                     backward={() => setCurrentState(states.GetDeviceInfo)}
+                    setDeviceName={setDeviceName}
                     userId={userId}
                 />
             );
@@ -299,25 +302,12 @@ const Device = () =>
             return (
                 <div>
                     <button onClick={() => {localStorage.removeItem(JSON.stringify(userId)); setCurrentState(states.SelectCreateDevice)}}> Unassign device <b>REMOVE THIS WHEN DONE</b> </button>
-                    <h1>Looks like this device has not been checked out...</h1>
+                    <h1>This device ({deviceName}) has not been checked out...</h1>
                     <h2>Please alert a librarian to get assistance in checking out this device.</h2>
                 </div>
             );
         case states.CheckedOut: // 7
-            if (isIpad === 1)
-            {
-                return (<Patron
-                    patronId={patronId} 
-                    meetingId={meetingId} 
-                    setMeetingId={setMeetingId}
-                    joiningMeeting={joiningMeeting}
-                    setJoinMeeting={setJoiningMeeting}
-                    socketInstance={socketInstance}
-                    />)
-            }
-            else
-            {
-                return (
+            return (
                 <Desktop
                     permissions={permissions} 
                     accountId={userId}
@@ -329,9 +319,10 @@ const Device = () =>
                     waitingForMeeting={waitingForMeeting}
                     setWaitingForMeeting={setWaitingForMeeting}
                     socketInstance={socketInstance}
-                    />)
-            }
-            break;
+                    isIpad={isIpad}
+                    patronName={patronName}
+                />
+            )
         case states.SelectDevice: // 8
             return (
                 <div className="display-box2">
@@ -344,7 +335,7 @@ const Device = () =>
                         showDetailsButton={true}
                         showDeviceStatus={0}
                     /> 
-                    <button className={selectedDevice == null ? "confirm-btn-gray" : "confirm-assign-btn"} onClick={() => {selectedDevice && setCurrentState(states.CheckCheckedOut)}}>Choose selected device</button>
+                    <button className={selectedDevice == null ? "confirm-btn-gray" : "confirm-assign-btn"} onClick={() => {selectedDevice && window.location.reload()}}>Choose selected device</button>
                 
                 </div>
             );

@@ -142,13 +142,12 @@ const MeetingView = (props) =>
 
     }, []);
 
-
     useEffect(() => {
         if (client !== undefined)
         {
             try {
-                client.init("en-US", "CDN", {leavOnPageLUnload: true, stayAwake: true}).then(() => {console.log("e")});
-                console.log("SDK initted");
+                client.init("en-US", "CDN", {leavOnPageLUnload: true, stayAwake: true})
+                .then(() => {console.log("client initted")});
             } 
             catch (error) {
                 throw Error(error);                
@@ -167,7 +166,7 @@ const MeetingView = (props) =>
 
             // event listeners, some rely on stream so they should be put here
             client.on("user-added", (payload) => {
-                //console.log(payload);
+                console.log(payload);
                 setParticipants();
                 // when someone is added, probably put logic to render videos well
             });
@@ -176,6 +175,7 @@ const MeetingView = (props) =>
                 // ^^ but opposite
                 //console.log(payload);
                 setParticipants();
+                props.patronLeave();
             });
 
             client.on("connection-change", (payload) => {
@@ -269,6 +269,7 @@ const MeetingView = (props) =>
             setShowVideo(false);
             setUseAudio(false);
             setFullScreenMeeting(false);
+            setToggle(false);
             props.updateNote();
             props.socketInstance.emit("basic_tutor_pull_all")
             //props.setInMeeting({"user_id": props.userId, "in_meeting": false});
@@ -345,6 +346,7 @@ const MeetingView = (props) =>
     useEffect(() => { 
         if (stream)
         {
+            return;
             (async () => {
                 
                 let oldVals = await closeAllStreams();
@@ -374,45 +376,26 @@ const MeetingView = (props) =>
 
     const renderTutorVideos = async (video = true) => 
     {
-        console.log(stream, video)
+        // console.log(stream, video)
+        let tag = (fullScreenMeeting ? "#fs-" : "#") + "tutors-user-video-box"
         if (stream && video)
         {
-            let notNice = true;
-            let preTag = (fullScreenMeeting ? "#fs-" : "#")
-            if (stream.isRenderSelfViewWithVideoElement()) // video element
-            {
-                console.log("nicely")
-                stream.startVideo({ videoElement: document.querySelector(preTag + "tutors-user-video-box"), hd:stream.isSupportHDVideo() }).then(() => {
-                console.log("nicely success")
-                    notNice = false;
-                    // document.querySelector("#").style.display = "block"
-                }).catch((error) => {
-                    notNice = true;
-                    console.error("Failed to render tutor video nicely");
-                    console.error(error);
+            stream.startVideo()
+            .then(() => {
+                stream.attachVideo(client.getCurrentUserInfo().userId, 3)
+                .then((userVideo) => {
+                    document.querySelector(tag).appendChild(userVideo);
                 })
-            }
-            else if (notNice)
-            {
-
-                stream.startVideo().then(() => {
-                    stream.renderVideo(document.querySelector(preTag + "tutors-user-canvas-video-box"), client.getCurrentUserInfo().userId, 300, 200, 0, 0, 3)
-                    // .then(() => {
-                    //     // document.querySelector("#").style.display = "block"
-                    // })
-                    .catch((error) => {
-                        console.error("Failed to render tutor video")
-                        console.error(error);
-                    })
-                })
-                .catch((e) => {
-                    console.error("Failed to load tutor video");
-                    console.error(e);
-                })
-            }
+            }).catch((e) => {
+                console.error("There was an error starting tutor video");
+                console.error(e);
+            })
         }
-        else if (stream)
+        else if (stream) {
+            
             await stream.stopVideo();
+            document.querySelector(tag).innerHTML = "";
+        }
         else
         {
             console.error("Stream uninitted: ", stream);
@@ -423,18 +406,17 @@ const MeetingView = (props) =>
     const renderPatronVideos = async (payload, video = true) => 
     {
         let preTag = (fullScreenMeeting ? "#fs-" : "#");
-
         if (stream && video)
         {
-            stream.renderVideo(document.querySelector(preTag + "patron-video"), payload.userId, 300, 200, 0, 0, 3)
-            .catch((e) => {
-                console.error("Failed to load patron video");
-                console.error(e);
-            }); 
+            stream.attachVideo(payload.userId, 3)
+            .then((userVideo) => {
+                console.log("stuff", patronScreenShare);
+                document.querySelector(preTag + "patron-video").appendChild(userVideo);
+            })
         }
         
         else if (stream)
-            await stream.stopRenderVideo(document.querySelector(preTag + "patron-video"), payload.userId)
+            stream.detachVideo(payload.userId);
         else
         {
             console.error("Stream uninitted: ", stream);
@@ -449,7 +431,7 @@ const MeetingView = (props) =>
         let preTag = (fullScreenMeeting ? "#fs-" : "#");
         if (stream && sharing)
         {
-            stream.startShareView(document.querySelector(preTag + "screen-share-video"), streamPayload.userId)
+            stream.startShareView(document.querySelector(preTag + "screen-share-video"), payload.userId)
         }
         else if (stream)
         {
@@ -478,6 +460,7 @@ const MeetingView = (props) =>
                 }).catch((error) => {
                     console.error("Failed to render tutors screen share nicely", error);
                     notNice = true;
+                    setIsScreenSharing(false);
                 })
             } 
             else if (notNice)
@@ -543,10 +526,19 @@ const MeetingView = (props) =>
     }
     
     const alertST = () => {
-        setNotify(true);
-        setTimeout(() => {
-            setNotify(false);
-            }, 5000);
+        if (participantList.length > 0)
+        {
+            setNotify(true);
+            setTimeout(() => {
+                setNotify(false);
+                }, 5000);
+        }
+        else
+        {
+            endMeeting(props.meetingId);
+            setEnding(false);
+
+        }
     }
 
     const fsVideoDisplays = () => 
@@ -555,140 +547,139 @@ const MeetingView = (props) =>
             <div className="fullscreen-tutors-videos-box">
                 <FontAwesomeIcon icon="fa-solid fa-minimize" className="max-button" onClick={() => setFullScreenMeeting(false)}/>
                 
+                {/* full screen tutor video */}
                 <div className="fs-tutors-participant-video" style={{display: !isScreenSharing ? "" : "none" }}> 
-                    <video id="fs-tutors-user-video-box" ></video>
-                    <canvas id="fs-tutors-user-canvas-video-box"> Your video </canvas>
+                    {/* <video id="fs-tutors-user-video-box" ></video>
+                    <canvas id="fs-tutors-user-canvas-video-box"> Your video </canvas> */}
+                    <video-player-container id="fs-tutors-user-video-box"></video-player-container>
                 </div>
-
+                {/* full screen tutor screen share */}
                 <div className="fs-tutors-participant-video-ss" style={{display: isScreenSharing ? "" : "none" }}> 
                     <video id="fs-tutors-user-video-box-ss" ></video>
                     <canvas id="fs-tutors-user-canvas-video-box-ss"> Your video </canvas>
                 </div>
+                {/* TODO patron stuff */}
                 {/* change this to allow space for notes when toggled */}
                 <div className={props.noteTaking ? "fs-patron-video-box-noting" : "fs-patron-video-box"}>
-                    <canvas id="fs-patron-video" hidden={patronScreenShare}> </canvas>
+                    <video-player-container id="fs-patron-video"></video-player-container>
                     <canvas id="fs-screen-share-video" hidden={!patronScreenShare}> </canvas>
                 </div>
-
                 {notify && (
                     <div className="text-pop">
                         <p>A Patron is still in this session...<br/> Are you sure you'd like to end the tutor session?</p>
-                
                     </div>
                 )}   
-
                 {props.noteTaking && props.fsNoting && meetingStarted && (
                     <div className="fs-noting">
                         <PatronNotes 
-                        inMeeting={props.inMeeting}
-                        patron={props.patron}
-                        setPatron={props.setPatron}
-                        updateNote={() => {props.updateNote}}
-                        setNoteTaking={props.setNoteTaking}
-                        patronNotes={props.patronNotes}
-                        setPatronNotes={props.setPatronNotes}
-                        fsNoting={props.fsNoting}
+                            inMeeting={props.inMeeting}
+                            patron={props.patron}
+                            setPatron={props.setPatron}
+                            updateNote={() => {console.log("THIS SHOULD NOT BE HAPPENING")}}
+                            setNoteTaking={props.setNoteTaking}
+                            patronNotes={props.patronNotes}
+                            setPatronNotes={props.setPatronNotes}
+                            fsNoting={props.fsNoting}
                         />
                     </div>
                 )} 
                 {(!ending && !notify) &&(
-                <div className="fs-toolbar">
-                {meetingStarted && !toggle &&(
-                    <Tooltip className="small-screen-bt" title="Allow Patron Screen Sharing">
-                    <button className="toggle-btn-n" onClick={() => {setToggle(true); props.socketInstance.emit("manage_patron_permissions", {"action":"give", "permission":"ss", "p_id":props.patron[1]})}}>
-                        <FontAwesomeIcon icon="fa-solid fa-toggle-off"/>
-                    </button>
-                    </Tooltip>
+                    <div className="fs-toolbar">
+                        {meetingStarted && !toggle &&(
+                            <Tooltip className="small-screen-bt" title="Allow Patron Screen Sharing">
+                            <button className="toggle-btn-n" onClick={() => {setToggle(true); props.socketInstance.emit("manage_patron_permissions", {"action":"give", "permission":"ss", "p_id":props.patron[1]})}}>
+                                <FontAwesomeIcon icon="fa-solid fa-toggle-off"/>
+                            </button>
+                            </Tooltip>
+                        )}
+                        {meetingStarted && toggle &&(
+                            <Tooltip className="small-screen-bt" title="Disallow Patron Screen Sharing">
+                            <button className="toggle-btn-y" onClick={() => {setToggle(false); props.socketInstance.emit("manage_patron_permissions", {"action":"take", "permission":"ss", "p_id":props.patron[1]})}}>
+                                <FontAwesomeIcon icon="fa-solid fa-toggle-on"/>
+                            </button>
+                            </Tooltip>
+                        )}
+                        {meetingStarted && (
+                            <Tooltip className="small-screen-bt" title="Toggle Noting">
+                                <button className="meeting-other-button" onClick={() => {console.log("Note taking is " + props.noteTaking), console.log("fsNoting is " + props.fsNoting), props.setNoteTaking(!props.noteTaking), props.setFsNoting(!props.fsNoting), console.log("Note taking is " + props.noteTaking), console.log("fsNoting is " + props.fsNoting)}}>
+                                    <FontAwesomeIcon icon="fa-solid fa-note-sticky" />
+                                </button>
+                            </Tooltip>
+                        )}
+                        <div className="center-part">
+                            {showVideo && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Stop Video">
+                                <button className={"meeting-other-button"} onClick={() => renderTutorVideos(false)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-video" />
+                                </button>
+                                </Tooltip>
+                            )}
+                            {!showVideo && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Start Video">
+                                <button className={"meeting-other-button"} onClick={() => renderTutorVideos(true)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-video-slash" />
+                                </button>
+                                </Tooltip>
+                            )}
+                            {useAudio && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Mute Microphone">
+                                <button className={"meeting-other-button"} onClick={() => setUseAudio(false)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-microphone" />
+                                </button>
+                                </Tooltip>
+                            )}
+                            {!useAudio && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Unmute Microphone">
+                                <button className={"meeting-other-button"} onClick={() => setUseAudio(true)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-microphone-slash" />
+                                </button>
+                                </Tooltip>
+                            )}
+                            {!isScreenSharing && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Start Screen Sharing">
+                                <button className={"share-button"} onClick={() => renderScreenShare(true)} disabled={patronScreenShare}>
+                                    <FontAwesomeIcon icon="fa-solid fa-desktop"/>
+                                </button>
+                                </Tooltip>
+                            )}
+                            {isScreenSharing && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Stop Screen Sharing">
+                                <button className={"end-button"} onClick={() => renderScreenShare(false)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-xmark" />
+                                </button>
+                                </Tooltip>
+                            )}
+                            {!isPlayerInPlayer && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Start Picture-in-Picture mode">
+                                <button className={"miniplayer-button"} onClick={() => setIsPlayerInPlayer(true)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-window-restore" />
+                                </button>
+                                </Tooltip>
+                            )}
+                            {isPlayerInPlayer && meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Close Picture-in-Picture mode">
+                                <button className={"end-miniplayer-button"} onClick={() => setIsPlayerInPlayer(false)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-window-maximize" />
+                                </button>
+                                </Tooltip>
+                            )}
+                            {/* {meetingStarted && (
+                                <Tooltip className="small-screen-bt" title="Patron Notes">
+                                <button className={"meeting-other-button"} onClick={() => props.setNoteTaking(true)}>
+                                    <FontAwesomeIcon icon="fa-solid fa-note-sticky" />
+                                </button>
+                                </Tooltip>
+                            )} */}
+                        </div>
+                        {meetingStarted && (
+                            <Tooltip className="small-screen-bt" title="End Meeting">
+                            <button className={"end-button"} onClick={() => {setEnding(true); setTimeout(() => {props.handle(); alertST();}, 1)}}>
+                                <FontAwesomeIcon icon="fa-solid fa-right-from-bracket" />
+                            </button>
+                            </Tooltip>
+                        )}
+                    </div>
                 )}
-                {meetingStarted && toggle &&(
-                    <Tooltip className="small-screen-bt" title="Disallow Patron Screen Sharing">
-                    <button className="toggle-btn-y" onClick={() => {setToggle(false); props.socketInstance.emit("manage_patron_permissions", {"action":"take", "permission":"ss", "p_id":props.patron[1]})}}>
-                        <FontAwesomeIcon icon="fa-solid fa-toggle-on"/>
-                    </button>
-                    </Tooltip>
-                )}
-                {meetingStarted && (
-                    <Tooltip className="small-screen-bt" title="Toggle Noting">
-                        <button className="meeting-other-button" onClick={() => {console.log("Note taking is " + props.noteTaking), console.log("fsNoting is " + props.fsNoting), props.setNoteTaking(!props.noteTaking), props.setFsNoting(!props.fsNoting), console.log("Note taking is " + props.noteTaking), console.log("fsNoting is " + props.fsNoting)}}>
-                            <FontAwesomeIcon icon="fa-solid fa-note-sticky" />
-                        </button>
-                    </Tooltip>
-                )}
-                <div className="center-part">
-                    {showVideo && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Stop Video">
-                        <button className={"meeting-other-button"} onClick={() => renderTutorVideos(false)}>
-                            <FontAwesomeIcon icon="fa-solid fa-video" />
-                        </button>
-                        </Tooltip>
-                    )}
-                    {!showVideo && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Start Video">
-                        <button className={"meeting-other-button"} onClick={() => renderTutorVideos(true)}>
-                            <FontAwesomeIcon icon="fa-solid fa-video-slash" />
-                        </button>
-                        </Tooltip>
-                    )}
-                    {useAudio && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Mute Microphone">
-                        <button className={"meeting-other-button"} onClick={() => setUseAudio(false)}>
-                            <FontAwesomeIcon icon="fa-solid fa-microphone" />
-                        </button>
-                        </Tooltip>
-                    )}
-                    {!useAudio && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Unmute Microphone">
-                        <button className={"meeting-other-button"} onClick={() => setUseAudio(true)}>
-                            <FontAwesomeIcon icon="fa-solid fa-microphone-slash" />
-                        </button>
-                        </Tooltip>
-                    )}
-                    {!isScreenSharing && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Start Screen Sharing">
-                        <button className={"share-button"} onClick={() => renderScreenShare(true)} disabled={patronScreenShare}>
-                            <FontAwesomeIcon icon="fa-solid fa-desktop"/>
-                        </button>
-                        </Tooltip>
-                    )}
-                    {isScreenSharing && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Stop Screen Sharing">
-                        <button className={"end-button"} onClick={() => renderScreenShare(false)}>
-                            <FontAwesomeIcon icon="fa-solid fa-xmark" />
-                        </button>
-                        </Tooltip>
-                    )}
-                    {!isPlayerInPlayer && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Start Picture-in-Picture mode">
-                        <button className={"miniplayer-button"} onClick={() => setIsPlayerInPlayer(true)}>
-                            <FontAwesomeIcon icon="fa-solid fa-window-restore" />
-                        </button>
-                        </Tooltip>
-                    )}
-                    {isPlayerInPlayer && meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Close Picture-in-Picture mode">
-                        <button className={"end-miniplayer-button"} onClick={() => setIsPlayerInPlayer(false)}>
-                            <FontAwesomeIcon icon="fa-solid fa-window-maximize" />
-                        </button>
-                        </Tooltip>
-                    )}
-                    {/* {meetingStarted && (
-                        <Tooltip className="small-screen-bt" title="Patron Notes">
-                        <button className={"meeting-other-button"} onClick={() => props.setNoteTaking(true)}>
-                            <FontAwesomeIcon icon="fa-solid fa-note-sticky" />
-                        </button>
-                        </Tooltip>
-                    )} */}
-                </div>
-                {meetingStarted && (
-                    <Tooltip className="small-screen-bt" title="End Meeting">
-                    <button className={"end-button"} onClick={() => {setEnding(true); setTimeout(() => {props.handle(); alertST();}, 1)}}>
-                        <FontAwesomeIcon icon="fa-solid fa-right-from-bracket" />
-                    </button>
-                    </Tooltip>
-                )}
-                </div>
-                )}
-
                 {ending && props.isST &&(
                 <div className="toolbar-assigning-fs">
                     {/* vvvvvvvv this leaves the assigning tool bar and replaces it with the default one */}
@@ -699,39 +690,31 @@ const MeetingView = (props) =>
                     <button className="leave-for-good" onClick={() => {setEnding(false); endMeeting(props.meetingId); setNotify(false)}}>End Session</button>
                 </div>
             )}
-
             </div>
-
-            
         );
     }
+
     const videoDisplays = () =>
     {
         return (
             <div className="tutors-videos-box">
                 <div className="max-button"><FontAwesomeIcon icon="fa-solid fa-maximize" onClick={() => setFullScreenMeeting(true)}/></div>
                 
+                {/* tutor screen share box */}
                 <div className="tutors-participant-video-ss" style={{display: isScreenSharing ? "" : "none" }}> 
                     <video id="tutors-user-video-box-ss" ></video>
                     <canvas id="tutors-user-canvas-video-box-ss"> Your video </canvas>
                 </div>
 
+                {/* tutor video */}
                 <div className="tutors-participant-video" style={{display: !isScreenSharing ? "" : "none" }}> 
-                    <video id="tutors-user-video-box" ></video>
-                    <canvas id="tutors-user-canvas-video-box"> Your video </canvas>
+                    <video-player-container id="tutors-user-video-box"></video-player-container>
+                    {/* <video id="tutors-user-video-box" ></video>
+                    <canvas id="tutors-user-canvas-video-box"> Your video </canvas> */}
                 </div>
-                {/* <div className="patron-video-box">
-                    <canvas id="patron-video" hidden={patronScreenShare}> </canvas>
-                    <canvas id="screen-share-video" hidden={!patronScreenShare}> </canvas>
-                </div>     */}
-                {/* <div className="tutor-share-screen-box">
-                    <video id="tutor-share-screen-video" className="tutor-screenshare"> </video>
-                    <canvas id="tutor-share-screen-canvas" className="tutor-screenshare"> Screen shared content </canvas>
-                </div> */}
-
                 
                 <div className="patron-video-box">
-                    <canvas id="patron-video" style={{display: !patronScreenShare ? "" : "none" }}> </canvas>
+                    <video-player-container id="patron-video" style={{display: !patronScreenShare ? "" : "none" }}> </video-player-container>
                     <canvas id="screen-share-video" style={{display: patronScreenShare ? "" : "none" }}> </canvas>
                 </div>   
 

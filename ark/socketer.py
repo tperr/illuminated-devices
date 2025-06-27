@@ -47,7 +47,7 @@ def basic_tutor_pull_all():
 
 @socketio.on("patron_join_tutor")
 def patron_join_tutor(data):
-    emit("patron_join_tutor", {"p_id": data["p_id"]}, to=users[data["p_id"]])
+    emit("patron_join_tutor", {"p_id": data["p_id"], "m_id": data["m_id"]}, to=users[data["p_id"]])
     emit("r_p_from_queue", {"p_id": data["p_id"]}, to="tutor_room")
 
 @socketio.on("t_message_t")

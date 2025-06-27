@@ -142,7 +142,7 @@ const NotificationBox = (props) =>
       })
       .catch(console.error);
 
-      props.socketInstance.emit("patron_join_tutor", {"p_id":patron[1]})
+      props.socketInstance.emit("patron_join_tutor", {"p_id":patron[1], "m_id":patron[0]})
       props.setMeetingId(patron[0]);
       props.setMeetingTopic(patron[6]);
       props.setPatron(patron);

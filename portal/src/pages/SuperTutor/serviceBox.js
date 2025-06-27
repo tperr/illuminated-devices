@@ -6,10 +6,6 @@ import "./roomBox.scss";
 import Tooltip from '@mui/material/Tooltip';
 import { hover } from "@testing-library/user-event/dist/hover";
 
-// async function clearQueue() {
-//     const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/clear_queue";
-//       const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
-//     let status;  
 
 async function updateDeviceNote(id, note) {
     const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/update_device_note";
@@ -132,14 +128,14 @@ const ServiceBox = (props) =>
           getPatronNotes(patron[1])
           .then((response) => {
     
-            console.log(response, patron);
+            //console.log(response, patron);
             if (response["NOTES"] === "ERROR")
               throw Error("ERROR GETTING NOTES");
             props.setPatronNotes(response["NOTES"])
           })
           .catch(console.error);
     
-          props.socketInstance.emit("patron_join_tutor", {"p_id":patron[1]})
+          props.socketInstance.emit("patron_join_tutor", {"p_id":patron[1], "m_id":patron[0]});
           props.setMeetingId(patron[0]);
           props.setMeetingTopic(patron[6]);
           props.setPatron(patron);
@@ -161,7 +157,7 @@ const ServiceBox = (props) =>
         setNotes("");
 
     }
-    console.log(props.devices)
+    //console.log(props.devices)
 
     return (
         <div id="service-box">
@@ -184,7 +180,7 @@ const ServiceBox = (props) =>
                                     props.patronQueue.map((patron) => {
                                         return (
                                             <div key={patron[0]} ref={patronRef}>
-                                                {patron[10] === 1 &&(
+                                                { (patron[10] === 1 || props.meetingId) &&(
                                                     <div className="patron-in-queue" style={{cursor: "not-allowed"}}>
                                                         {patron[10] === 0 ? 
                                                         (<FontAwesomeIcon icon={"fa-solid fa-circle-pause"} style={{color:"#BF9005"}}/>) :
@@ -195,7 +191,7 @@ const ServiceBox = (props) =>
                                                         {patron[3]} {patron[4]}
                                                     </div>
                                                 )}
-                                                {patron[10] === 0 &&(
+                                                {(patron[10] === 0 && !props.meetingId) &&(
                                                     <div className="patron-in-queue" onClick={() => handlePatronClick(patron[0])}>
                                                         {patron[10] === 0 ? 
                                                         (<FontAwesomeIcon icon={"fa-solid fa-circle-pause"} style={{color:"#BF9005"}}/>) :
@@ -266,7 +262,7 @@ const ServiceBox = (props) =>
                     <div id="devices-checked-out">
                         
                         {props.devices.map((device) => {
-                            console.log(device)
+                            //console.log(device)
                             return (
                                 <div className="checked-out-devices" key={device[0]}>
 

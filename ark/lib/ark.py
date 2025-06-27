@@ -350,9 +350,10 @@ class Ark:
                 database=self.db
             )
             cur = conn.cursor()
-
+            
             # Lookup
             cur.callproc("get_device_info", (device_id,))
+            
             data = cur.fetchall()
             # Close connection
             cur.close()
@@ -1011,6 +1012,8 @@ class Ark:
 
             for n in notes:
                 # Lookup
+                print("DOING THE LOOKUP")
+                print(n)
                 cur.callproc("tutor_updat_patron_notes", (n[0], n[1], n[2],))
                 result = cur.fetchone()
                 if result[0] != "SUCCESS":

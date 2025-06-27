@@ -550,7 +550,7 @@ h6{
     }
 }
 
-#patron-video, #screen-share-video{
+#patron-video, #screen-share-video, video-player {
     height: 100%;
     width: 100%;
 }
@@ -1052,7 +1052,7 @@ h6{
   width: 90% !important;
   max-width: 90% !important;
   min-width: 90% !important;
-  height: 38.75vh !important;
+  // height: 38.75vh !important;
 
   .MuiAccordionSummary-content {
     margin: 0px;

@@ -12,24 +12,24 @@ const PatronNotes = (props) =>
     // each note is [noteId, patronId, note, date]
     // when its a new note set noteId=0, in the db it will add it to table
     // when removing patron notes set patronId=0, db handles deletion based off noteId
-    const updatedNotes = [...props.patronNotes, [0, props.patron[1], ""]]; // idx [3] could contain a date that it was updated if wanted, when pushed to server it will auto give timestamp
+    const updatedNotes = [[0, props.patron[1], ""], ...props.patronNotes]; // idx [3] could contain a date that it was updated if wanted, when pushed to server it will auto give timestamp
     props.setPatronNotes(updatedNotes);
-    setCurrentNoteIndex(updatedNotes.length - 1);
+    setCurrentNoteIndex(0);
   };
 
   const updateNote = (index, value) => {
     const updatedNotes = [...props.patronNotes];
-    if (index >= props.patronNotes.length)
+    if (props.patronNotes.length === 0)
     {
       // have to create new note, but cant call addNewNote bc of usestate.setsomething being async
-      const updatedNotes = [...props.patronNotes, [0, props.patron[1], value]];
+      const updatedNotes = [[0, props.patron[1], value]];
       props.setPatronNotes(updatedNotes);
-      setCurrentNoteIndex(index);
+      setCurrentNoteIndex(0);
     }
     else
     {
       updatedNotes[index][2] = value;
-      props.setPatronNotes(updatedNotes);
+      props.setPatronNotes(updatedNotes);    
     }
   };
 
@@ -63,7 +63,14 @@ const PatronNotes = (props) =>
         <div className="patron-notes-box">
           <div className="notes-content">
             <div className="patron-notes-name">
-              Patron Notes for {props.patron[3]} {props.patron[4]}
+              Patron Notes for {props.patron[3]} {props.patron[4]} 
+              {props.patronNotes && props.patronNotes[currentNoteIndex] && (
+                <>
+                <br />
+                {props.patronNotes[currentNoteIndex].length === 4 ? props.patronNotes[currentNoteIndex][3] + " " : "Today "}
+                ({currentNoteIndex + 1} / {props.patronNotes.length})
+                </>
+              )}
             </div>
             <div className={props.fsNoting ? "note-item-fs" : "note-item"}>
               <textarea

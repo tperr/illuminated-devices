@@ -147,10 +147,10 @@ def patron_join_waiting_queue():
     lookup = db.patron_join_waiting_queue(request.json['id'], request.json['topic'], request.json['pwd'])
     return jsonify({"data": lookup})
 
-@patron.route("/patron/get_meeting_info", methods=["POST"])
-def patron_get_meeting_info():
+@patron.route("/patron/get_meeting_info/<id>", methods=["GET"])
+def patron_get_meeting_info(id):
     db = Ark()
-    lookup = db.patron_get_meeting_info(request.json['id'])
+    lookup = db.patron_get_meeting_info(id)
     return {"data": lookup}
 
 

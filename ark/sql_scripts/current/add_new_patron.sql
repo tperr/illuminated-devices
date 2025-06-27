@@ -2,23 +2,25 @@ DELIMITER //
 USE ark //
 CREATE OR REPLACE FUNCTION subroutine_add_new_patron(account_id_as_bin VARBINARY(16), organization_id_as_bin VARBINARY(16), patron_id_as_bin VARBINARY(16), new_fname VARCHAR(64), new_lname VARCHAR(64), new_bsid VARCHAR(64), new_birthday_as_int INT, new_email VARCHAR(255), new_phone VARCHAR(12), new_street_address VARCHAR(64), new_city VARCHAR(32), new_state VARCHAR(2), new_zip VARCHAR(10), new_notes VARCHAR(128)) RETURNS INT
     BEGIN
-        DECLARE count INT; 
+        DECLARE count INT;
+        DECLARE allowall BOOLEAN; 
+        SET allowall = FALSE;
 
         -- Ensure that the BSID is not already being used by another patron assigned to this organization
         SET count = (SELECT COUNT(*) FROM patron_roster WHERE organization_id=organization_id_as_bin AND bsid=new_bsid);
-        IF count > 0 THEN
+        IF allowall AND count > 0 THEN
             RETURN -2; -- BSID already in use
         END IF; 
 
         -- Ensure that the email is not already being used by another patron assigned to this organization
         SET count = (SELECT COUNT(*) FROM patron_roster WHERE organization_id=organization_id_as_bin AND email=new_email);
-        IF count > 0 THEN 
+        IF allowall AND count > 0 THEN 
             RETURN -4; -- Invalid email
         END IF;
 
         -- Ensure that the phone is not already being used by another patron assigned to this organization
         SET count = (SELECT COUNT(*) FROM patron_roster WHERE organization_id=organization_id_as_bin AND phone=new_phone);
-        IF count > 0 THEN 
+        IF allowall AND count > 0 THEN 
             RETURN -5; -- Invalid phone
         END IF;
 

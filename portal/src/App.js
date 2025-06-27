@@ -18,9 +18,10 @@ import Profile from './pages/Profile';
 import MeetingTesting from './pages/MeetingTest.js';
 import LocationManagement from './pages/LocationManagement/LocationManagement.js'; 
 import OrganizationHome from './pages/OrganizationHome/OrganizationHome.js';
-import Tutor from './pages/Tutor/Tutor.js';
+import Tutor from './pages/SuperTutor/Tutor.js';
 import SuperTutor from './pages/SuperTutor/SuperTutor.js';
-import IPad from './pages/Device/iPad/iPad.js';
+// import IPad from './pages/Device/iPad/iPad.js';
+import Device from './pages/Device/Device.js';
 import SplitPageTest from './pages/SplitPageTest';
 import Provider from './pages/Provider/Provider.js';
 
@@ -434,8 +435,7 @@ function App() {
 					<Route path="/manage" element={<LocationManagement/>}/>
 					<Route path="/tutor" element={<Tutor/>}/>
 					<Route path="/supertutor" element={<SuperTutor/>}/>
-					<Route path="/ipad" element={<IPad/>}/>
-					<Route path="/desktop" element={<IPad/>}/>
+					<Route path="/device" element={<Device/>}/>
 					
 
 					{/* Not Found */}

@@ -140,16 +140,16 @@ async function assignPatronToTutor(meetingId, tutorId) {
 async function updatePatronNotes(notes) {
   const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/update_patron_note";
   const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
-    let response = [];
+  let response = [];
   response = await fetch(fullAddr, {
     method: 'POST',
     headers: {
       'Authorization': authorization,
       'Content-type': 'application/json',
     },
-        body: JSON.stringify({
-            "notes": notes,
-        },)
+    body: JSON.stringify({
+        "notes": notes,
+    },)
   })
   .then(response => {
     if (response.ok) {
@@ -166,6 +166,38 @@ async function updatePatronNotes(notes) {
   })
 
   return response;
+}
+
+
+async function clearQueue() {
+  const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/clear_queue";
+  const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+  let status;
+
+
+  status = await fetch(fullAddr, {
+      method: 'POST',
+      headers: {
+      'Authorization': authorization,
+      'Content-type': 'application/json',
+      },
+  })
+  .then(response => {
+      if (response.ok) {
+      return response.json();
+      }
+      throw response;
+  })
+  .catch(error => {
+      console.error("error code found in NotificationBox (NotificationBox.js -> clearQueue()", error);
+      console.log(error);
+      return error;
+  })
+  .finally(() => {
+      //
+  })
+
+  return status; 
 }
 
 const SuperTutor = () =>
@@ -213,7 +245,6 @@ const SuperTutor = () =>
 
     const [noteTaking, setNoteTaking] = useState(false);
     const [fsNoting,  setFsNoting] = useState(false);
-
 
     const handleExpansion = (panel) => (event, newExpanded) => {
       setExpanded(newExpanded ? panel : false);
@@ -335,8 +366,14 @@ const SuperTutor = () =>
 
     const pushChat = (tutorId, message, toThem=1) => {
       console.log(tutorId);
+      let num2day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      let num2month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      let currentTime = new Date(Date.now());
       const currentTutors = tutorsRef.current;
-      currentTutors[tutorId][1].push([toThem, message, Date.now()]);
+      currentTutors[tutorId][1].push([toThem, message, 
+         num2day[currentTime.getDay()] + ", " + currentTime.getDate().toString().padStart(2, "0") + " " + 
+         num2month[currentTime.getMonth()] + " " + currentTime.getFullYear() + " " +
+         currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " GMT"]);
       updateTutorStuff(currentTutors);
     }
 
@@ -451,15 +488,19 @@ const SuperTutor = () =>
 
       socket.on("t_log_off", (data) => {
         // logic to get tutor information and add it to tutors
-        const currentTutors = tutorsRef.current;
-        currentTutors[data["uuid"]][0][6] = 0;
+        try {
+          const currentTutors = tutorsRef.current;
+          currentTutors[data["uuid"]][0][6] = 0;
 
-        updateTutorStuff(currentTutors);
+          updateTutorStuff(currentTutors);
 
-        logon(data["uuid"], "off")
-        .catch((e) => {
+          logon(data["uuid"], "off")
+          .catch((e) => {
+            throw e
+          });
+        } catch (e) {
           console.error(e);
-        });
+        }
         
       });
 
@@ -575,11 +616,11 @@ const SuperTutor = () =>
                   id="panel1-header"
                   className="AccordionSummary"
                 >
-                  <Typography component={"span"} variant={'body2'}>IDs in Service</Typography>
+                  <Typography component={"span"} variant={'body2'}>IDs in Service </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography component={"span"} variant={'body2'}>
-                    
+                    <button className="clear-button" onClick={() => {clearQueue(); socketInstance.emit("clear_patron_queue", {}); clearQueue();}}>Clear Queue</button> 
                     <ServiceBox
                       setDevices={setDevices}
                       devices={devices}
@@ -609,32 +650,30 @@ const SuperTutor = () =>
             </div>
 
             <div id="tutor-content">
-            
-                <div className="left-half-format">
-                  
-
-                  <Accordion 
-                    defaultExpanded 
-                    id="meeting-box"
-                    className={meetingId !== undefined ? "customZoomAccordion" : "ZoomAccordion"}
+              <div className="left-half-format">
+                <Accordion 
+                  defaultExpanded 
+                  id="meeting-box"
+                  className={meetingId !== undefined ? "customZoomAccordion" : "ZoomAccordion"}
+                >
+                  <AccordionSummary
+                    expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
+                    aria-controls="panel2-content"
+                    id="panel2-header"
+                    className="AccordionSummary"
                   >
-                    <AccordionSummary
-                      expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
-                      aria-controls="panel2-content"
-                      id="panel2-header"
-                      className="AccordionSummary"
-                    >
                     <Typography component={"span"} variant={'body2'}>
-                        {(meetingId === undefined) &&
-                        <div>Zoom Call</div>
-                        }
-                        
-                        {(meetingId !== undefined) &&
-                        <div style={{fontWeight: 'bold'}}>Zoom Call - In Meeting with {patron[3]} {patron[4]}</div>
-                        }
+                      {(meetingId === undefined) &&
+                      <div>Zoom Call</div>
+                      }
+                      
+                      {(meetingId !== undefined) &&
+                      <div style={{fontWeight: 'bold'}}>Zoom Call - In Meeting with {patron[3]} {patron[4]}</div>
+                      }
                     </Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography component={"span"} variant={'body2'}>
                       <MeetingView 
                         socketInstance={socketInstance} 
                         isST={isST} 
@@ -658,61 +697,61 @@ const SuperTutor = () =>
                         setPatronNotes={setPatronNotes} 
                         setFsNoting={setFsNoting}
                         fsNoting={fsNoting}
+                        patronLeave={() => doNotification("Patron " + patron[3] + " " + patron[4] + " has left the meeting")}
                       />
-                    </AccordionDetails>
-                  </Accordion>
-                  
-                  <Accordion defaultExpanded id="room-box" className={(emphRooms && inMeeting) ? "customAccordion" : "Accordion"}>
-                    <AccordionSummary
-                      expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
-                      aria-controls="panel2-content"
-                      id="panel2-header"
-                      className="AccordionSummary"
-                    >
-                        <Typography component={"span"} variant={'body2'}><div>Rooms</div></Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Typography component={"span"} variant={'body2'}>
-                        <RoomBox 
-                          setMeetingId={setMeetingId} 
-                          setSelectedTutor={setSelectedTutor} 
-                          tutors={tutors} 
-                          patron={patron} 
-                          assignPT={assignToTutor} 
-                          onlineTutors={onlineTutors} 
-                          meetingId={meetingId}/>
-                      </Typography>
-                    </AccordionDetails>
-                  </Accordion>
-
-                </div>
-                <div className="right-half-format">
-                  <Accordion defaultExpanded id="chat-box" className="ChatBoxAccordion" style={{height: '59.5vh'}}>
-                    <AccordionSummary
-                      expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
-                      aria-controls="panel4-content"
-                      id="panel4-header"
-                      className="AccordionSummary"
-                    >
-                        <Typography component={"span"} variant={'body2'}>Chat</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ height: "90%" }}>
-                      <TutorChat 
-                        pushChat={pushChat}
-                        meetingId={meetingId} 
-                        tutors={onlineTutors}
-                        inMeeting={inMeeting} 
-                        socketInstance={socketInstance} 
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+                
+                <Accordion defaultExpanded id="room-box" className={(emphRooms && inMeeting) ? "customAccordion" : "Accordion"}>
+                  <AccordionSummary
+                    expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
+                    aria-controls="panel2-content"
+                    id="panel2-header"
+                    className="AccordionSummary"
+                  >
+                      <Typography component={"span"} variant={'body2'}><div>Rooms</div></Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography component={"span"} variant={'body2'}>
+                      <RoomBox 
+                        setMeetingId={setMeetingId} 
+                        setSelectedTutor={setSelectedTutor} 
+                        tutors={tutors} 
                         patron={patron} 
-                        setPatron={setPatron} 
-                        updateNote={() => {updatePatronNotes(patronNotes)}} 
-                        patronNotes={patronNotes}
-                        setPatronNotes={setPatronNotes}
-                      />
-                    </AccordionDetails>
-                  </Accordion>
-                  
-                </div>
+                        assignPT={assignToTutor} 
+                        onlineTutors={onlineTutors} 
+                        meetingId={meetingId}/>
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+
+              </div>
+              <div className="right-half-format">
+                <Accordion defaultExpanded id="chat-box" className="ChatBoxAccordion" >
+                  <AccordionSummary
+                    expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
+                    aria-controls="panel4-content"
+                    id="panel4-header"
+                    className="AccordionSummary"
+                  >
+                    <Typography component={"span"} variant={'body2'}>Chat</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ height: "90%" }}>
+                    <TutorChat 
+                      pushChat={pushChat}
+                      meetingId={meetingId} 
+                      tutors={onlineTutors}
+                      inMeeting={inMeeting} 
+                      socketInstance={socketInstance} 
+                      patron={patron} 
+                      setPatron={setPatron} 
+                      patronNotes={patronNotes}
+                      setPatronNotes={setPatronNotes}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </div>
             </div>
             <Popup contentStyle={{width:"80%"}} open={settingsOpen} onClose={() => {setSettingsOpen(false)}} position="center">
                 Settings <button onClick={getMediaDevices}>Refresh device list</button>

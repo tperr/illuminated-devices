@@ -225,7 +225,6 @@ def update_patron_information():
 
     # Get data from JSON (POST)
     data = request.json['data']
-
     try:
         provider = data["provider"]
         patron_id = data["patron_id"]
@@ -241,13 +240,11 @@ def update_patron_information():
         new_zip = data["zip"]
         notes = data["notes"]
         command_number = data["command_number"]
-
         # Validate that the provider making the request is the provider provided in the POST
         if provider != sub:
             return ArkError("invalid_request", "_malformed_token").get_respondable_json()
 
         db = Ark()
-
         returnable = db.update_patron_information(provider, patron_id, fname, lname, bsid, birthday, email, phone, street_address, city, state, new_zip, notes, int(command_number))
         return {"data": returnable}
         

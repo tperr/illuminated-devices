@@ -111,8 +111,8 @@ async function addNewPatron(userId, newPatronName, newPatronBsid, newPatronUnixB
 
     // Split name into fname and lname
     let list = newPatronName.split(" ");
-    let newPatronLname = list.pop();
-    let newPatronFname = list.join(" ");
+    let newPatronFname = list.pop();
+    let newPatronLname = list.join(" ");
     
     let body = {
         "data": {
@@ -131,8 +131,6 @@ async function addNewPatron(userId, newPatronName, newPatronBsid, newPatronUnixB
         }
     }
 
-    console.log(body);
-
 	status = await fetch(endpoint, {
 		method: 'POST',
 		headers: {
@@ -148,7 +146,6 @@ async function addNewPatron(userId, newPatronName, newPatronBsid, newPatronUnixB
 		throw response;
 	})
 	.then(data => {
-        console.log(data);
 
 		var received_response = data.data;
 		if (received_response["error"] === "invalid_token") {
@@ -1197,7 +1194,8 @@ const PatronManagement = (props) => {
                                             e.preventDefault(); 
                                             e.stopPropagation(); 
                                             if(editPatron) {
-                                                if ((props.currentPatron.identifier !== fieldPatronName) || (props.currentPatron.bsid !== fieldLocalId) || (props.currentPatron.birthday !== fieldPatronUnixBirthday) || (props.currentPatron.email !== fieldPatronEmail) || (props.currentPatron.phone !== fieldPatronPhone) || (props.currentPatron.getDisplayableAddress() !== (fieldPatronStreet + ", " + fieldPatronCity + ", " + fieldPatronState + ", " + fieldPatronZip) || (props.currentPatron.notes !== fieldPatronNotes))) {
+                                                // disable temporary
+                                                if (true || (props.currentPatron.identifier !== fieldPatronName) || (props.currentPatron.bsid !== fieldLocalId) || (props.currentPatron.birthday !== fieldPatronUnixBirthday) || (props.currentPatron.email !== fieldPatronEmail) || (props.currentPatron.phone !== fieldPatronPhone) || (props.currentPatron.getDisplayableAddress() !== (fieldPatronStreet + ", " + fieldPatronCity + ", " + fieldPatronState + ", " + fieldPatronZip) || (props.currentPatron.notes !== fieldPatronNotes))) {
                                                     setConfirmPatronManagement(true);
                                                     /*
                                                     * Need to put frontend sanity checks here just like in adding patron but one step at a time
@@ -1239,7 +1237,7 @@ const PatronManagement = (props) => {
                                                 if (fieldLocalId === "") {
                                                     errorNumber += 1;
                                                 }
-                                                if (errorNumber > 0) {
+                                                if (false && errorNumber > 0) {
                                                     setFieldStylesChange(errorNumber);
                                                 }
                                                 else {

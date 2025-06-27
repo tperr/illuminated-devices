@@ -5,7 +5,7 @@ import PageWrapper from './PageWrapper.js';
 
 // import Provider from '../pages/Provider/Provider.js';  //-- Deprecated
 import OrganizationHome from '../pages/OrganizationHome/OrganizationHome.js';
-import Tutor from './Tutor/Tutor.js';
+import Tutor from './SuperTutor/Tutor.js';
 import Device from './Device/Device.js';
 import SuperTutor from './SuperTutor/SuperTutor.js';
 
@@ -45,7 +45,7 @@ const Home = () => {
                         <li><a href="/meetingtest"> Meeting Testing </a> </li>
                         <li><a href="/tutor"> Tutor </a> </li>
                         <li><a href="/supertutor"> Super Tutor </a></li>
-                        <li><a href="/ipad"> Patron </a></li>
+                        <li><a href="/device"> Patron </a></li>
                     </ol>
                     <br/>
                     {/*<button onClick={() => checkOut(userId, "68aee89d-cda3-11ed-a1ce-0050569fc3a3", "4add003d-16bb-11ed-a1ce-0050569fc3a3", 1680659787, 1680659787)}> clicky</button>*/}

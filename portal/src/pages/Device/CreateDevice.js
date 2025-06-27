@@ -89,6 +89,7 @@ const CreateDevice = (props) =>
     const [ipadChecked, setIpadChecked] = useState(false);
     const handleKeyPress = (e) => {
         setDeviceName(e.target.value);
+        props.setDeviceName(e.target.value);
     }
     console.log(userId)
     const handleNoteChange = (e) => {
@@ -108,7 +109,7 @@ const CreateDevice = (props) =>
                 setNameError((deviceName === "" ? randName : deviceName) + " is already in use");
             else
             {
-                props.forward({"id":response["data"], "patronId":undefined});
+                props.forward({"id":response["data"], "patronId":undefined, "name":(deviceName === "" ? randName : deviceName)});
                 console.log(response)
             }
         })
@@ -144,7 +145,8 @@ const CreateDevice = (props) =>
                 />
             </div>
             <div>
-                Is this device an ipad? <input type="checkbox" name="ipad" checked={ipadChecked} onChange={() => setIpadChecked(!ipadChecked)}/>
+                Is this device an ipad? <input type="radio" name="ipad" checked={ipadChecked} onChange={() => setIpadChecked(true)}/> Yes
+                <input type="radio" name="ipad" checked={!ipadChecked} onChange={() => setIpadChecked(false)}/> No
             </div>
             <button onClick={handleSubmit}>Submit</button> 
             <button onClick={() => {props.backward()}}>back</button>
