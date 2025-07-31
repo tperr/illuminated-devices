@@ -1,5 +1,8 @@
 @use "../../variables";
 
+iframe#webpack-dev-server-client-overlay{display:none!important}
+
+
 #body {
     //display:grid;
     //gap: 10px;
@@ -330,6 +333,8 @@ h6{
   justify-content: center;
   background-color: black;
   border-radius: 10px;
+  z-index: 5;
+  padding-top: 20px;
   // align-self: flex-end;
 }
 
@@ -344,6 +349,7 @@ h6{
   position: absolute;
   bottom: 2vh;
   left: 0vh;
+  z-index: 5;
   // align-self: flex-end;
 }
 
@@ -365,9 +371,10 @@ h6{
   justify-content: center;
   background-color: black;
   border-radius: 10px;
+  padding-top: 20px;
 }
 
-.toolbar-assigning-fs{
+.fs-toolbar-assigning{
   display: flex;
   width: 90vw;
   align-items: center;
@@ -516,7 +523,7 @@ h6{
 
 .tutors-videos-box{
     height: 29vh;
-    width: 100%;
+    // width: 100%;
     display: grid;
 }
 
@@ -527,22 +534,13 @@ h6{
   justify-self: center;
   aspect-ratio: 18 / 9;
   border-radius: 5px;
+  width:100%;
 }
-
-/*
-.patron-video-box {
-    height: 25%;
-    position: absolute;
-    justify-self: center;
-    aspect-ratio: 18 / 9;
-    border-radius: 5px;
-}
-*/
 
 .max-button{
     height: 5%;
     width: 5%;
-    z-index: 3;
+    z-index: 10;
     position: absolute;
     color: white;
     &:hover{
@@ -612,13 +610,12 @@ h6{
     /* z-index: 4; */
     /* width: 18.75vh; */
     /* border-radius: 5px; */
-    position: absolute;
-    right: 52%;
+    right: 2%;
     /* justify-self: flex-end; */
     /* right: 0; */
     aspect-ratio: 16 / 9;
     z-index: 3;
-    top: 31%;
+    top: 2%;
     width: 18.75vh;
     border-radius: 5px;
 }
@@ -725,11 +722,13 @@ h6{
   //height: 25%;
   //position: absolute;
   justify-self: center;
-  aspect-ratio: 18 / 9;
+  aspect-ratio: 16 / 9;
   border-radius: 5px;
-  width: 105vh;
-  top: 23vh;
+  width: 100%;
+  // top: 23vh;
   position: absolute;
+  left: 0px;
+  height: 90%;
 }
 
 .fs-patron-video-box-noting{

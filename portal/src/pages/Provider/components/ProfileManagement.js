@@ -29,8 +29,8 @@ async function updatePatronInformation(userId, patronId, newPatronName, newPatro
 
     // Split name into fname and lname
     let list = newPatronName.split(" ");
-    let newPatronLname = list.pop();
-    let newPatronFname = list.join(" ");
+    let newPatronLname = list.length >= 2 ? list[1] : "";
+    let newPatronFname = list[0];
 
     // If birthday is January 1st 1970 (by chance) then add "1" so as not to confuse our defaults
     // This is necessary because we use "0" as a default birthday but with Unix timestamp that is actually January 1 1970 0:00:00

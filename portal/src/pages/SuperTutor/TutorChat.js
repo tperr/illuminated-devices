@@ -140,7 +140,7 @@ const TutorChat = (props) =>
     }, [props.meetingId])
 
     return ( 
-      <div style={{height: '45vh'}}>
+      <div>
 
         <div className="chat-section">
           <div className="chat-box-content">
@@ -188,6 +188,7 @@ const TutorChat = (props) =>
                   setPatron={props.setPatron}
                   patronNotes={props.patronNotes}
                   setPatronNotes={props.setPatronNotes}
+                  isST={props.isST}
                 />
               </div>
             )}

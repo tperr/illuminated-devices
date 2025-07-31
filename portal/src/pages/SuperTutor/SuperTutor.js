@@ -221,7 +221,7 @@ const SuperTutor = () =>
     const [meetingTopic, setMeetingTopic] = useState();
     const [inMeeting, setInMeeting] = useState(false);
     const [patron, setPatron] = useState();
-    const [patronInRoom, setPatronInRoom] = useState(undefined);
+    const [patronInRoom, setPatronInRoom] = useState(false);
     const [patronNotes, setPatronNotes] = useState([]);
     const [devices, setDevices] = useState([]);
     const devicesRef = useRef(devices);
@@ -391,7 +391,7 @@ const SuperTutor = () =>
     const pullAllData = () => {
       logon(userId)
       .then((response) => {
-        //console.log(response)
+        console.log(response)
         updateTutorStuff(response["tutors"]);
         setPatronQueue(response["queue"]);
         setDevices(response["devices"]);
@@ -641,7 +641,7 @@ const SuperTutor = () =>
                       tutors={tutors}
                       setPatronNotes={setPatronNotes}
                       userId={userId}
-                      // clearQueue={() => setPatronQueue([])} 
+                      patronInRoom={patronInRoom}
                     />
 
                   </Typography>
@@ -697,7 +697,9 @@ const SuperTutor = () =>
                         setPatronNotes={setPatronNotes} 
                         setFsNoting={setFsNoting}
                         fsNoting={fsNoting}
-                        patronLeave={() => doNotification("Patron " + patron[3] + " " + patron[4] + " has left the meeting")}
+                        setPatronInRoom={setPatronInRoom}
+                        pullAllData={pullAllData}
+                        patronLeave={() => {doNotification("Patron " + patron[3] + " " + patron[4] + " has left the meeting"); setPatronInRoom(false);}}
                       />
                     </Typography>
                   </AccordionDetails>
@@ -748,6 +750,7 @@ const SuperTutor = () =>
                       setPatron={setPatron} 
                       patronNotes={patronNotes}
                       setPatronNotes={setPatronNotes}
+                      isST={true}
                     />
                   </AccordionDetails>
                 </Accordion>

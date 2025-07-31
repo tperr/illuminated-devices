@@ -28,7 +28,8 @@ BEGIN NOT ATOMIC
                 bsid,
                 BIN_TO_UUID(current_location_id, 0) as current_location_id,
                 BIN_TO_UUID(home_location_id, 0) as home_location_id,
-                notes
+                notes,
+                is_ipad
             FROM devices 
             WHERE (organization_id=organization_id_as_bin OR organization_id_as_bin is NULL)
             ) 

@@ -33,8 +33,9 @@ async function updatePatronInformation(userId, patronId, newPatronName, newPatro
 
     // Split name into fname and lname
     let list = newPatronName.split(" ");
-    let newPatronLname = list.pop();
-    let newPatronFname = list.join(" ");
+    let newPatronLname = list.length >= 2 ? list[1] : "";
+    let newPatronFname = list[0];
+    console.log(list, newPatronFname, newPatronFname);
 
     // If birthday is January 1st 1970 (by chance) then add "1" so as not to confuse our defaults
     // This is necessary because we use "0" as a default birthday but with Unix timestamp that is actually January 1 1970 0:00:00
@@ -111,8 +112,8 @@ async function addNewPatron(userId, newPatronName, newPatronBsid, newPatronUnixB
 
     // Split name into fname and lname
     let list = newPatronName.split(" ");
-    let newPatronFname = list.pop();
-    let newPatronLname = list.join(" ");
+    let newPatronLname = list.length >= 2 ? list[1] : "";
+    let newPatronFname = list[0];
     
     let body = {
         "data": {
@@ -1489,6 +1490,7 @@ const PatronManagement = (props) => {
 
                                 updatePatronInformation(props.userId, props.currentPatron.id, fieldPatronName, fieldLocalId, fieldPatronUnixBirthday, fieldPatronEmail, validatePhoneNumber(fieldPatronPhone), fieldPatronStreet, fieldPatronCity, fieldPatronState, fieldPatronZip, fieldPatronNotes, commandNumber)
                                 .then((status) => {
+                                    console.log(status)
                                     if (status && status[0] && status[0]["patron_updated"]) { 
                                         if (status[0]["patron_updated"] !== 0) {
                                             props.setPatronDidModify(3);

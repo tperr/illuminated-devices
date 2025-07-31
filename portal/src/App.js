@@ -31,6 +31,8 @@ import Provider from './pages/Provider/Provider.js';
 // FontAwesome Icons
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { 
+	faHourglassStart,
+	faCheck,
 	faToggleOn, 
 	faToggleOff, 
 	faExclamationTriangle, 
@@ -86,7 +88,8 @@ import {
 	faMessage,
 	faCirclePause,
 	faSquarePhone,
-	faStar
+	faStar,
+	faComputer
 } from '@fortawesome/free-solid-svg-icons';
 import { 
 	faCircle as faRegCircle, 
@@ -97,6 +100,8 @@ import {
 	faArrowsRotate 
 } from '@fortawesome/free-solid-svg-icons';
 library.add(
+	faHourglassStart,
+	faCheck,
 	faStar,
 	faSquarePhone,
 	faCirclePause,
@@ -156,7 +161,8 @@ library.add(
 	faComments, 
 	faMessage, 
 	faClipboard, 
-	faSolidClipboard
+	faSolidClipboard,
+	faComputer
 );
 
 import 'react-notifications/lib/notifications.css';

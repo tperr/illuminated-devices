@@ -82,9 +82,11 @@ const Device = () =>
     const [setServerURL, serverURL] = useState("https://illuminated.cs.mtu.edu/");
     let socketDestroyer = () => {};
 
-    const [permissions, setPermissions] = useState({
+    let defaultPerms = {
         "ss":false, // screen share
-    });
+        "picture": true,
+    }
+    const [permissions, setPermissions] = useState(defaultPerms);
 
     const states = Object.freeze({
         GetDeviceInfo: 0,
@@ -294,14 +296,14 @@ const Device = () =>
         case states.PatronedSocket: // 5
             if (socketInstance) // check if socket is currently initted
                 socketInstance.emit("update_id", {"p_id": patronId});
-            else
-                socketDestroyer = socketSetup(patronId);
+                
             setCurrentState(states.CheckedOut);
             break;
         case states.NotCheckedOut: // 6
             return (
                 <div>
                     <button onClick={() => {localStorage.removeItem(JSON.stringify(userId)); setCurrentState(states.SelectCreateDevice)}}> Unassign device <b>REMOVE THIS WHEN DONE</b> </button>
+                    <button className={"patron-button"} onClick={() => window.location.reload()}>Reload</button>
                     <h1>This device ({deviceName}) has not been checked out...</h1>
                     <h2>Please alert a librarian to get assistance in checking out this device.</h2>
                 </div>
@@ -310,6 +312,7 @@ const Device = () =>
             return (
                 <Desktop
                     permissions={permissions} 
+                    resetPermissions={() => {setPermissions(defaultPerms)}}
                     accountId={userId}
                     patronId={patronId} 
                     meetingId={meetingId} 
@@ -321,6 +324,7 @@ const Device = () =>
                     socketInstance={socketInstance}
                     isIpad={isIpad}
                     patronName={patronName}
+                    setUpSocket={() => {socketDestroyer = socketSetup(patronId)}}
                 />
             )
         case states.SelectDevice: // 8

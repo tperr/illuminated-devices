@@ -15,7 +15,7 @@ CREATE OR REPLACE PROCEDURE tutor_updat_patron_notes(note_id mediumint(9), p_id_
             IF p_id_as_hex = "0" OR notes = '' THEN
                 DELETE FROM patron_notes WHERE id=note_id;
             ELSEIF note_id = 0 AND notes != '' THEN
-                INSERT INTO patron_notes(patron_id, note) values (p_id, notes);
+                INSERT INTO patron_notes(patron_id, note, note_date) values (p_id, notes, NOW());
             ELSE
                 UPDATE patron_notes SET note=notes, note_date=NOW() WHERE id=note_id AND note != notes;
             END IF;

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Tooltip from "@mui/material/Tooltip";
 
 export class Device {    
-    constructor(id="", dateAdded="", lastCheckin="", lastCheckout="", name="", patronId="", providerId="", returnDate="", status="", bsid="", currentLocationId="", homeLocationId="", patron_fname="", patron_lname="", notes="", log=[]) {
+    constructor(id="", dateAdded="", lastCheckin="", lastCheckout="", name="", patronId="", providerId="", returnDate="", status="", bsid="", currentLocationId="", homeLocationId="", patron_fname="", patron_lname="", notes="", log=[], isIpad=true) {
         switch(status) {
             case("Available"): 
                 this.colorCode = "#ABC4AA";
@@ -53,6 +53,7 @@ export class Device {
         else {
             this.log = [];
         }
+        this.isIpad = isIpad;
     }
 
     typeOf() {
@@ -141,6 +142,16 @@ export class Device {
         const identifier = this.name;
         return identifier;
     }
+
+    set isIpad(p) {
+        this._isIpad = p; 
+    }
+    
+    get isIpad() {
+        return this._isIpad;
+    }
+
+
 
     deviceStatusIcon() {
         let statusIcon;
@@ -256,6 +267,8 @@ export class Device {
                         {!detailsButton && 
                             <div className={"category-item-grid-container"}> 
                                 <div className="identifier--device">
+                                    {this.isIpad ? <FontAwesomeIcon icon="fa-solid fa-tablet-screen-button" /> : <FontAwesomeIcon icon="fa-solid fa-computer" />}
+                                    
                                     {this.identifier}
                                 </div>
 
@@ -276,6 +289,7 @@ export class Device {
                         {detailsButton && 
                             <div className={"category-item-grid-container"}>
                                 <div className="identifier--device">
+                                    {this.isIpad ? <FontAwesomeIcon icon="fa-solid fa-tablet-screen-button" /> : <FontAwesomeIcon icon="fa-solid fa-computer" />} 
                                     {this.identifier}
                                 </div>
 

@@ -8,11 +8,11 @@ CREATE OR REPLACE FUNCTION subroutine_patron_join_queue(p_id_as_hex VARBINARY(36
         set m_id = (select meeting_id from meeting_queue where patron_id = p_id);
         
         IF m_id THEN -- this means that they were dropped prematurely
-            UPDATE meeting_queue SET patron_dropped = 0, in_meeting = 1 WHERE meeting_id = m_id;
+            UPDATE meeting_queue SET patron_dropped = 0, in_meeting = 1, rejoined = 1 WHERE meeting_id = m_id;
         ELSE
             INSERT INTO meeting_queue 
-            (patron_id, topic, pwd, patron_dropped, tutor_dropped, in_meeting) 
-            VALUES ( p_id, topic, pwd, 0, 0, 0 );
+            (patron_id, topic, pwd, patron_dropped, tutor_dropped, in_meeting, rejoined) 
+            VALUES ( p_id, topic, pwd, 0, 0, 0, 0 );
         END IF;
         RETURN (SELECT meeting_id FROM meeting_queue WHERE patron_id = p_id);
     END //

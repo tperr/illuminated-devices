@@ -68,6 +68,45 @@ async function getOrganizationLocations(userId) {
 	return itemList; 
 }
 
+async function getPatronNotes(pid) {
+	const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/get_patron_notes/" + pid;
+	const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+    let itemList = [];
+
+	itemList = await fetch(fullAddr + "/organizations", {
+		method: 'GET',
+		headers: {
+			'Authorization': authorization,
+			'Content-type': 'application/json',
+		},
+	})
+	.then(response => {
+		if (response.ok) {
+			return response.json()
+		}
+		throw response;
+	})
+	.then(data => {
+		var received_response = data.data;
+		if (received_response["error"] === "invalid_token") {
+			console.error("error code found in receive account details (Provider.js -> getPatronNotes() -> Ark request -> (then) received_response[\"error\"]");
+			// What to do in an error situation?
+		}
+		else {
+            return received_response;
+		}
+        throw data;
+	})
+	.catch(error => {
+		console.error("error code found in receive account details (Provider.js -> getPatronNotes() -> Ark request -> (catch) received_response[\"error\"] ", error);
+	})
+	.finally(() => {
+		//
+	})
+
+	return itemList; 
+}
+
 /***** Main Export *****/
 const OrganizationHome = () => {
     /***** Variables *****/

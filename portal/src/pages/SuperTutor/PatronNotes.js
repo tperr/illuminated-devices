@@ -1,12 +1,18 @@
-import React, {useContext, useState } from "react";
+import React, {useContext, useState, useRef } from "react";
 import { UserContext } from "../../App";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import generatePDF from 'react-to-pdf';
+
 import "./PatronNotes.scss";
+
 
 const PatronNotes = (props) =>
 {   
   const { userId } = useContext(UserContext);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(0);
+  const [allNotes, setAllNotes] = useState(false);
+
+  const pdfContentRef = useRef();
 
   const addNewNote = () => {
     // each note is [noteId, patronId, note, date]
@@ -61,44 +67,79 @@ const PatronNotes = (props) =>
     <>
       {props.inMeeting && (
         <div className="patron-notes-box">
-          <div className="notes-content">
-            <div className="patron-notes-name">
-              Patron Notes for {props.patron[3]} {props.patron[4]} 
-              {props.patronNotes && props.patronNotes[currentNoteIndex] && (
-                <>
-                <br />
-                {props.patronNotes[currentNoteIndex].length === 4 ? props.patronNotes[currentNoteIndex][3] + " " : "Today "}
-                ({currentNoteIndex + 1} / {props.patronNotes.length})
-                </>
+          {allNotes ? 
+            <div className="notes-content">
+              <button className="notes-update-button" onClick={() => {setAllNotes(false)}}>
+                View Single Note
+              </button>
+              {props.isST && (
+                <button className="notes-update-button download-button" onClick={() => generatePDF(pdfContentRef)}>
+                  Download notes
+                </button>
               )}
+
+              <div ref={pdfContentRef}>
+                <div className="patron-notes-name">
+                  Patron Notes for {props.patron[3]} {props.patron[4]} 
+                </div>
+                {props.patronNotes && props.patronNotes.map((note, idx) => {
+                  return (
+                    <div key={note[0]}>
+                      <div className="patron-notes-name">
+                        {note.length === 4 ? note[3] + " ": "Today "}
+                        ({idx + 1} / {props.patronNotes.length})
+                      </div>
+                      <div className="notes-textbox">
+                        {note[2]}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div> 
             </div>
-            <div className={props.fsNoting ? "note-item-fs" : "note-item"}>
-              <textarea
-                className="notes-textbox"
-                value={props.patronNotes && props.patronNotes[currentNoteIndex] ? props.patronNotes[currentNoteIndex][2] : ""}
-                onChange={handleNoteChange}
-              />
+            : 
+            <div className="notes-content">
+              <div className="patron-notes-name">
+                Patron Notes for {props.patron[3]} {props.patron[4]} 
+                {props.patronNotes && props.patronNotes[currentNoteIndex] && (
+                  <>
+                  <br />
+                  {props.patronNotes[currentNoteIndex].length === 4 ? props.patronNotes[currentNoteIndex][3] + " " : "Today "}
+                  ({currentNoteIndex + 1} / {props.patronNotes.length})
+                  </>
+                )}
+              </div>
+              <div className={props.fsNoting ? "note-item-fs" : "note-item"}>
+                <textarea
+                  className="notes-textbox"
+                  value={props.patronNotes && props.patronNotes[currentNoteIndex] ? props.patronNotes[currentNoteIndex][2] : ""}
+                  onChange={handleNoteChange}
+                />
+              </div>
+              <div className={props.fsNoting ?"notes-navigation-fs" : "notes-navigation"}>
+                <button
+                  className="notes-nav-button"
+                  onClick={handlePrevNote}
+                  disabled={currentNoteIndex === 0 || props.patronNotes.length === 0}
+                >
+                  <FontAwesomeIcon icon="fa-solid fa-arrow-left" />
+                </button>
+                <button className="notes-update-button" onClick={addNewNote}>
+                  Add new note
+                </button>
+                <button className="notes-update-button" onClick={() => {setAllNotes(true)}}>
+                  View All Notes
+                </button>
+                <button
+                  className="notes-nav-button"
+                  onClick={handleNextNote}
+                  disabled={props.patronNotes && (currentNoteIndex === props.patronNotes.length - 1 || props.patronNotes.length === 0)}
+                >
+                  <FontAwesomeIcon icon="fa-solid fa-arrow-right" />
+                </button>
+              </div>
             </div>
-            <div className={props.fsNoting ?"notes-navigation-fs" : "notes-navigation"}>
-              <button
-                className="notes-nav-button"
-                onClick={handlePrevNote}
-                disabled={currentNoteIndex === 0 || props.patronNotes.length === 0}
-              >
-                <FontAwesomeIcon icon="fa-solid fa-arrow-left" />
-              </button>
-              <button className="notes-update-button" onClick={addNewNote}>
-                Add new note
-              </button>
-              <button
-                className="notes-nav-button"
-                onClick={handleNextNote}
-                disabled={currentNoteIndex === props.patronNotes.length - 1 || props.patronNotes.length === 0}
-              >
-                <FontAwesomeIcon icon="fa-solid fa-arrow-right" />
-              </button>
-            </div>
-          </div>
+          }
         </div>
       )}
     </>

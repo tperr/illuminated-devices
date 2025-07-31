@@ -9,7 +9,8 @@ import { render } from "react-dom";
 import Popup from 'reactjs-popup';
 
 window.onerror = function (message, source, lineno, colno, error) {
-    console.error("Error occurred: ", message, " at ", source, ":", lineno, ":", colno, error);
+    if (error)
+        console.error("Error occurred: ", message, "\nat ", source, ":", lineno, ":", colno, "\n", error);
 };
 
 function getJWTToken(payload, sdkSecret) {
@@ -230,17 +231,38 @@ const Desktop = (props) =>
 
         setClient(ZoomVideo.createClient());
 
-        // camera and microphone permissions
-        navigator.mediaDevices.getUserMedia({video: true, audio: true})
-        .then((s) => {
-            s.getTracks().forEach((t) => {
-                t.stop();
+        try {
+            // camera and microphone permissions
+            navigator.mediaDevices.getUserMedia({video: true, audio: true})
+            .then((s) => {
+                s.getTracks().forEach((t) => {
+                    t.stop();
+                })
             })
-        })
-        .catch((e) => {
-            console.error("there was an error requesting camera and microphone permissions");
-            console.error(e);
-        })
+            .catch((e) => {
+                console.error("there was an error requesting camera and microphone permissions");
+                console.error(e);
+            })
+        }
+        catch (e)
+        {
+            console.error("error: ", e);
+        }
+        // navigator.permissions.query({name: "camera"})
+        // .then((status) => {
+        //     switch (status.state)
+        //     {
+        //         case "granted":
+        //             break;
+        //         case "denied":
+        //             console.error("Camera permissions denied");
+        //             break;
+        //         case "prompt":
+        //             break;
+        //         default:
+        //             console.error("Oh no! this should not have happened")
+        //     }
+        // })
     }, []);
 
     useEffect(() => {
@@ -324,13 +346,13 @@ const Desktop = (props) =>
                 // change of connection thing
                 if (payload.state === "Closed")
                 {
-                    //console.log("here")
-                    setStream(undefined);
-                    //props.setMeetingId(undefined);
-                    setInMeeting(false);
                     setLeft(true);
-                    props.setWaitingForMeeting(true);
-                    setPressedButton(false);
+                    // setStream(undefined);
+                    //props.setMeetingId(undefined);
+                    // setInMeeting(false);
+                    //setLeft(true);
+                    // props.setWaitingForMeeting(true);
+                    // setPressedButton(false);
                 }
                 if (payload.state === "Connected")
                 {
@@ -415,6 +437,7 @@ const Desktop = (props) =>
     }, [stream])
 
     useEffect(() => {
+        console.log(left);
         if (left)
         {
             setLeft(false);
@@ -425,6 +448,7 @@ const Desktop = (props) =>
             setSharingScreen(false);
             client.leave(false);
             props.setWaitingForMeeting(true);
+            props.resetPermissions();
             setPressedButton(false);
             if (props.meetingId && !leaving)
             {
@@ -494,14 +518,15 @@ const Desktop = (props) =>
 
     const joinQueue = () => {
         //props.setMeetingId(-1);
+        setLeft(false);
         setPressedButton(true);
         props.setWaitingForMeeting(true);
         joinWaitingQueue(props.patronId, props.patronId, 123456).then((response) => {
             if (response !== "error" && response !== undefined /*&& response["data"] !== null*/)
             {
-                //setInMeeting(true);
-                console.log(response["data"][0]);
-                props.socketInstance.emit("joined_queue", {"m_id":response["data"][0]})
+                // console.log(response["data"][0]);
+                props.socketInstance.emit("joined_queue", {"m_id":response["data"][0]});
+                props.setUpSocket();
                 props.setMeetingId(response["data"][0]);
 
             }
@@ -624,13 +649,13 @@ const Desktop = (props) =>
                             <button className={"patron-end-button"} onClick={() => setLeaving(true)}> Leave Session <FontAwesomeIcon icon="fa-solid fa-right-from-bracket" /></button>
                         </div>
 
-                        <div className="patrons-participant-video" style={{display: !patronSharingScreen ? "" : "none" }}>  
+                        <div className="patrons-participant-video" style={{display: !patronSharingScreen && props.permissions["picture"] ? "" : "none" }}>  
                             <video-player-container id="patrons-user-video-box"></video-player-container>
                             {/* <video id="patrons-user-video-box"> </video>
                             <canvas id="patrons-user-canvas-box"> </canvas> */}
                         </div>
                     
-                        <div className="patrons-participant-video-ss" style={{display: patronSharingScreen ? "" : "none" }}>  
+                        <div className="patrons-participant-video-ss" style={{display: patronSharingScreen && props.permissions["picture"] ? "" : "none" }}>  
                             <video id="patrons-user-video-box-ss"> </video>
                             <canvas id="patrons-user-canvas-box-ss"> </canvas>
                         </div>

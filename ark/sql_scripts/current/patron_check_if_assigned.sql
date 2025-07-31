@@ -8,6 +8,7 @@ CREATE OR REPLACE PROCEDURE patron_check_if_assigned(m_id MEDIUMINT(9))
             SELECT "server_error";
             ROLLBACK;
         END;
+        UPDATE meeting_queue SET rejoined = 0 WHERE meeting_id=m_id;
         BEGIN
             SELECT BIN_TO_UUID(tutor_id, 0) tutor_id
             FROM meeting_queue

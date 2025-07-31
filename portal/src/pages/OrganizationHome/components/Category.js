@@ -87,8 +87,9 @@ const Category = props => {
     if ((data !== null) && (data !== undefined)) {
         let d = data; 
         if (props.name === "devices") {
+            console.log(d)
             for (let i = 0; i < d.length; i++) {
-                let device = new Device(d[i].device_id, d[i].date_added, d[i].last_checkin, d[i].last_checkout, d[i].name, d[i].patron_id, d[i].provider_id, d[i].return_date, d[i].status, d[i].bsid, d[i].current_location_id, d[i].home_location_id, d[i].fname, d[i].lname, d[i].notes);
+                let device = new Device(d[i].device_id, d[i].date_added, d[i].last_checkin, d[i].last_checkout, d[i].name, d[i].patron_id, d[i].provider_id, d[i].return_date, d[i].status, d[i].bsid, d[i].current_location_id, d[i].home_location_id, d[i].fname, d[i].lname, d[i].notes, [], d[i].is_ipad === 1);
                 items.push(device);
 
                 if (device.status === "Available") {

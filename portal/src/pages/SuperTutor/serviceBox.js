@@ -179,47 +179,40 @@ const ServiceBox = (props) =>
                                 {props.patronQueue.length !== 0 && (
                                     props.patronQueue.map((patron) => {
                                         return (
-                                            <div key={patron[0]} ref={patronRef}>
-                                                { (patron[10] === 1 || props.meetingId) &&(
-                                                    <div className="patron-in-queue" style={{cursor: "not-allowed"}}>
-                                                        {patron[10] === 0 ? 
-                                                        (<FontAwesomeIcon icon={"fa-solid fa-circle-pause"} style={{color:"#BF9005"}}/>) :
-                                                        (patron[0] === props.meetingId ? 
-                                                        (<FontAwesomeIcon icon={"fa-solid fa-star"} style={{color:"#2A78E4"}}/>) :
-                                                        (<FontAwesomeIcon icon={"fa-solid fa-square-phone"} style={{color:"#009E11"}}/>))}
-                                                        
-                                                        {patron[3]} {patron[4]}
-                                                    </div>
-                                                )}
-                                                {(patron[10] === 0 && !props.meetingId) &&(
-                                                    <div className="patron-in-queue" onClick={() => handlePatronClick(patron[0])}>
-                                                        {patron[10] === 0 ? 
-                                                        (<FontAwesomeIcon icon={"fa-solid fa-circle-pause"} style={{color:"#BF9005"}}/>) :
-                                                        (patron[0] === props.meetingId ? 
-                                                        (<FontAwesomeIcon icon={"fa-solid fa-star"} style={{color:"#2A78E4"}}/>) :
-                                                        (<FontAwesomeIcon icon={"fa-solid fa-square-phone"} style={{color:"#009E11"}}/>))}
-                                                        
-                                                        {patron[3]} {patron[4]}
-                                                    </div>
-                                                )}
+                                            <div className="patron-in-queue" key={patron[0]} ref={patronRef} style={props.patronInRoom ? {cursor:"not-allowed"} : {cursor: ""}} onClick={props.patronInRoom ? () => console.log("no clicky") : () => handlePatronClick(patron[0])}>
+                                                {patron[10] === 0 ? 
+                                                    <FontAwesomeIcon icon={"fa-solid fa-circle-pause"} style={{color:"#BF9005"}}/> :
+                                                    (patron[0] === props.meetingId ? 
+                                                        (props.patronInRoom ? 
+                                                            <FontAwesomeIcon icon={"fa-solid fa-star"} style={{color:"#2A78E4"}}/> : 
+                                                            (patron[11] === 1 ? 
+                                                                <FontAwesomeIcon icon="fa-solid fa-right-to-bracket" style={{color: "#B197FC",}} /> :
+                                                                <FontAwesomeIcon icon="fa-solid fa-hourglass-start" style={{color: "#FFD43B"}}/>
+                                                            )
+                                                            // <FontAwesomeIcon icon="fa-solid fa-check" style={{color: "#63E6BE"}}/>
+                                                        ) :
+                                                        (<FontAwesomeIcon icon={"fa-solid fa-square-phone"} style={{color:"#009E11"}}/>)
+                                                    )
+                                                }
                                                 
-
+                                                {patron[3]} {patron[4]}
+                                                
                                                 <Popup contentStyle={{height:"fit-content", width:"fit-content", position: 'absolute', top: patronRef.current ? patronRef.current.getBoundingClientRect().bottom : 0, left: patronRef.current ? patronRef.current.getBoundingClientRect().left : 0}} open={selectPatron === patron[0]} onClose={() => setSelectPatron(null)}>
                                                     <div className="patron-opt-item">
                                                             <button className="patron-opt-buttons" onClick={() => {joinMeeting(patron); setAssigning(false); setSelectPatron(null); setDevNoting(false)}}>Join Call</button>
                                                             <button className="patron-opt-buttons" onClick={() => {setAssigning(true); setDevNoting(false); console.log(assigning)}}>Assign To Room</button>
                                                             <button className="patron-opt-buttons" onClick={() => {setAssigning(false); setDevNoting(true)}}>Device Notes</button>
                                                     </div>
- 
+
                                                         <div className="add-on-container">
                                                             {/* PUT DEVICE NOTES TEXT STUFF HERE */}
                                                                 {assigning && (
                                                                     <div>
                                                                     {props.availTutors && Object.keys(props.availTutors).filter((tutors) =>{
-                                                                      return tutors !== props.userId;
+                                                                        return tutors !== props.userId;
                                                                     })
                                                                     .map((tutor, index) => {
-                                                                      return (
+                                                                        return (
                                                                         // <div className="display-rooms">
                                                                         //     <button className="rooms" onClick={() => {props.setSelectedTutor(tutors), props.assignPT(patron[0], tutors[0]), console.log("Sending this stupid patron to roger doger")}}>
                                                                         //             Room {index+1}
@@ -229,17 +222,17 @@ const ServiceBox = (props) =>
                                                                         //     </button>
                                                                         // </div>
                                                                         <div style={{border: "1px solid black", borderRadius:"4px"}}>
-                                                                          <button className="good-button" onClick={() => (props.setSelectedTutor(props.availTutors[tutor][0]), props.assignPT(patron[0], props.availTutors[tutor][0][0]))}>Assign to Room {index+1}</button>
-                                                                          | T: {props.availTutors[tutor][0][1]} {props.availTutors[tutor][0][2]}
+                                                                            <button className="good-button" onClick={() => (props.setSelectedTutor(props.availTutors[tutor][0]), props.assignPT(patron[0], props.availTutors[tutor][0][0]))}>Assign to Room {index+1}</button>
+                                                                            | T: {props.availTutors[tutor][0][1]} {props.availTutors[tutor][0][2]}
                                                                         </div>
-                                                                      )
+                                                                        )
                                                                     })}
                                                                     {!props.availTutors && (
-                                                                      <div>
+                                                                        <div>
                                                                         There are no available tutors
-                                                                      </div>
+                                                                        </div>
                                                                     )}
-                                                                  </div>
+                                                                    </div>
                                                                 )}
 
                                                                 {/* {devNoting && (

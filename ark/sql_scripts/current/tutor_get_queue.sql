@@ -26,7 +26,8 @@ CREATE OR REPLACE PROCEDURE get_meeting_queue(t_id_as_hex VARBINARY(36))
             session_key,
             pwd,
             pr.notes,
-            in_meeting
+            in_meeting,
+            rejoined
         FROM meeting_queue mq 
 	    LEFT JOIN patron_roster pr
 	    ON pr.patron_id=mq.patron_id

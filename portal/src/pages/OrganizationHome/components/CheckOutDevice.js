@@ -186,6 +186,7 @@ const CheckOutDevice = props => {
     };
 
     const showDeviceDetails = () => {
+        console.log(props.currentDevice.isIpad)
         return ( 
             <div> 
                 <div className={"display-flex"}>
@@ -202,7 +203,8 @@ const CheckOutDevice = props => {
                 <div style={{display: "flex"}}>
                     <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
                         <div className="attribute">
-                            Device Name
+                            Device Name 
+                            {/* {props.currentDevice.isIpad ? <FontAwesomeIcon icon="fa-solid fa-tablet-screen-button" /> : <FontAwesomeIcon icon="fa-solid fa-computer" />} */}
                         </div>
                         <div className="display-box2">
                             {props.currentDevice.name}
@@ -422,6 +424,7 @@ const CheckOutDevice = props => {
                         {(props.currentDevice !== undefined) && (props.currentDevice !== null) && (props.currentDevice.name !== "") && (
                             <div className="selected-item-display">
                                 <b>Selected:</b> {props.currentDevice.name} {(props.currentDevice.status !== "Available") && "[Unavailable]"}
+                                {/* {props.currentDevice.isIpad ? <FontAwesomeIcon icon="fa-solid fa-tablet-screen-button" /> : <FontAwesomeIcon icon="fa-solid fa-computer" />} */}
                             </div>
                         )}
 

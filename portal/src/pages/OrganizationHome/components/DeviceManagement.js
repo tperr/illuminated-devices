@@ -239,111 +239,6 @@ const DeviceManagement = (props) => {
 	    },
     });
     
-    const showDeviceDetails = () => {
-        return ( 
-            <div> 
-                <div className={"display-flex"}>
-                    <div className="title">Device Information</div>
-                    {props.currentDevice.isOverdue() && (
-                        <div className="title" style={{textAlign: "right", color: "red", fontFamily: "Poppins-EB"}}>
-                            <FontAwesomeIcon icon="warning"/> Device Overdue
-                        </div>
-                        )}
-                </div>
-                <div className="divider"/>
-                
-                <div style={{display: "flex"}}>
-                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
-                        <div className="attribute">
-                            Device Name
-                        </div>
-                        <div className="display-box2">
-                            {props.currentDevice.name}
-                            {props.currentDevice.name === "" && <div>No name set</div>}
-                        </div>
-                    </div>
-
-                    <div style={{margin: "auto", width: "50%"}}>
-                        <div className="attribute">
-                            Date Added
-                        </div>
-                        <div className="display-box2">
-                            {(props.currentDevice.dateAdded !== "") && (
-                                props.currentDevice.getDisplayableTime("dateAdded")
-                            )}
-                            {props.currentDevice.dateAdded === "" && <div>Unknown</div>}
-                        </div>
-                    </div>
-                </div>
-
-                <div style={{display: "flex"}}>
-                    <div style={{margin: "auto", width: "50%", paddingRight: "1%"}}>
-                        <div className="attribute">
-                            Last Checkout
-                        </div>
-                        <div className="display-box2">
-                            {(props.currentDevice.lastCheckout !== "") && (
-                                props.currentDevice.getDisplayableTime("lastCheckout")
-                            )}
-                            {props.currentDevice.lastCheckout === "" && <div>No name set</div>}
-                        </div>
-                    </div>
-
-                    <div style={{margin: "auto", width: "50%"}}>
-                        <div className="attribute">
-                            Last Checkin
-                        </div>
-                        <div className="display-box2">
-                            {(props.currentDevice.lastCheckin !== "") && (
-                                props.currentDevice.getDisplayableTime("lastCheckin")
-                            )}
-                            {props.currentDevice.lastCheckin === "" && <div>Unknown</div>}
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <div className="attribute">
-                        Scheduled Return Date
-                    </div>
-                    <div className="display-box2">
-                        {(props.currentDevice.returnDate !== "") && (
-                            props.currentDevice.getDisplayableTime("returnDate")
-                        )}
-                        {props.currentDevice.returnDate === "" && <div>Device Not Checked Out</div>}
-                    </div>
-                </div>
-
-                <div className="attribute">
-                    Notes
-                </div>
-                <div className="display-box2">
-                    {props.currentDevice.notes}
-                    {props.currentDevice.notes === "" && <div>No notes</div>}
-                </div>
-
-                <div className="attribute">
-                    Check Out Log
-                </div>
-                <div className="display-box2">
-                    {props.currentDevice.log.map((log, i) => {
-                        return <div key={i}>{log}</div>
-                    })}
-                    {props.currentDevice.log.length === 0 && (<div>No log entries</div>)}
-                </div>
-
-                <div className="attribute">
-                    ID
-                </div>
-                <div className="display-box2">
-                    {props.currentDevice.bsid}
-                    {props.currentDevice.bsid === "" && <div>No ID</div>}
-                </div>
-
-            </div>
-        );
-    }
-
     /***** Returned Page *****/ 
     return (
         <div style={{height: "100%"}}>
@@ -370,6 +265,7 @@ const DeviceManagement = (props) => {
                         {(props.currentDevice !== undefined) && (props.currentDevice !== null) && (props.currentDevice.name !== "") && (
                             <div className="selected-item-display">
                                 <b>Selected:</b> {props.currentDevice.name}
+                                {/* {props.currentDevice.isIpad ? <FontAwesomeIcon icon="fa-solid fa-tablet-screen-button" /> : <FontAwesomeIcon icon="fa-solid fa-computer" />} */}
                             </div>
                         )}
 
@@ -491,7 +387,9 @@ const DeviceManagement = (props) => {
                                             <Tooltip title={
                                                 <React.Fragment>
                                                     <div style={{fontFamily: "Poppins-EB", textTransform: "uppercase"}}>
-                                                        Device Name
+                                                        Device Name 
+                                                        {/* {props.currentDevice.isIpad ? <FontAwesomeIcon icon="fa-solid fa-tablet-screen-button" /> : <FontAwesomeIcon icon="fa-solid fa-computer" />} */}
+
                                                     </div>
                                                     <div className={"login-divider"} style={{backgroundColor: "white", height: "0.1em"}}/>
                                                     <div>
@@ -1011,6 +909,7 @@ const DeviceManagement = (props) => {
                         <div>
                             <div className="attribute">
                                 Device Name
+                                {/* {props.currentDevice.isIpad ? <FontAwesomeIcon icon="fa-solid fa-tablet-screen-button" /> : <FontAwesomeIcon icon="fa-solid fa-computer" />} */}
                             </div>
                             
                             <div className="display-flex">
