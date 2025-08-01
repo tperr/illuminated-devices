@@ -3,29 +3,22 @@ import React, {useContext, useState, useEffect, useRef} from "react";
 import { UserContext } from "../../App.js";
 import Navbar from "../../subscript/universal/Navbar.js";
 import Footer from '../../subscript/universal/Footer.js';
-import MeetingView from "../SuperTutor//MeetingView.js";
-import TutorChat from "../SuperTutor//TutorChat.js";
-import NotificationBox from "../SuperTutor//NotificationBox.js";
+import MeetingView from "./MeetingView.js";
+import TutorChat from "./TutorChat.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { NotificationManager } from 'react-notifications';
-import RoomBox from "../SuperTutor//roomBox.js";
-import PatronNotes from "../SuperTutor//PatronNotes.js";
+import RoomBox from "./roomBox.js";
 
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import Fade from '@mui/material/Fade';
-import { styled } from '@mui/material/styles';
-import MuiAccordion from '@mui/material/Accordion';
-import MuiAccordionSummary from '@mui/material/AccordionSummary';
-import MuiAccordionDetails from '@mui/material/AccordionDetails';
 
 import Popup from 'reactjs-popup';
 import { io } from "socket.io-client";
 
-import "../SuperTutor//SuperTutor.scss";
-import ServiceBox from "../SuperTutor//serviceBox.js";
+import "./Tutor.scss";
+import ServiceBox from "./serviceBox.js";
 
 async function getMeetingInfo(id) {
   const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/general_get_meeting_info/";
@@ -56,7 +49,7 @@ async function getMeetingInfo(id) {
 
 async function logon(id, onoff="on") {
     const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/log";
-	const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+  const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
     let response;
     response = await fetch(fullAddr + onoff + "/" + id, {
       method: 'GET',
@@ -64,92 +57,92 @@ async function logon(id, onoff="on") {
         'Authorization': authorization,
         'Content-type': 'application/json',
       },
-	})
-	.then(response => {
-		if (response.ok) {
-			return response.json()
-		}
-		throw response;
-	})
-	.catch(error => {
-		console.error("error code found in (SuperTutor.js -> logon()", error);
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json()
+    }
+    throw response;
+  })
+  .catch(error => {
+    console.error("error code found in (SuperTutor.js -> logon()", error);
         return error;
-	})
-	.finally(() => {
-		//
-	})
+  })
+  .finally(() => {
+    //
+  })
 
-	return response;
+  return response;
 }
 
 async function getCheckedoutDeviceStatus() {
     const fullAddr = "https://illuminated.cs.mtu.edu/ark/devices/checkedout_devices";
-	const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+  const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
     let response = [];
-	response = await fetch(fullAddr, {
-		method: 'GET',
-		headers: {
-			'Authorization': authorization,
-			'Content-type': 'application/json',
-		},
-	})
-	.then(response => {
-		if (response.ok) {
-			return response.json()
-		}
-		throw response;
-	})
-	.catch(error => {
-		console.error("error code not found in (SuperTutor.js -> getCheckedoutDeviceStatus() -> Ark request -> (catch) received_response[\"error\"] ", error);
-	})
-	.finally(() => {
-		//
-	})
+  response = await fetch(fullAddr, {
+    method: 'GET',
+    headers: {
+      'Authorization': authorization,
+      'Content-type': 'application/json',
+    },
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json()
+    }
+    throw response;
+  })
+  .catch(error => {
+    console.error("error code not found in (SuperTutor.js -> getCheckedoutDeviceStatus() -> Ark request -> (catch) received_response[\"error\"] ", error);
+  })
+  .finally(() => {
+    //
+  })
 
-	return response; 
+  return response; 
 }
 
 async function assignPatronToTutor(meetingId, tutorId) {
     const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/assign_patron_to_tutor/";
-	const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+  const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
     let response = [];
-	response = await fetch(fullAddr + meetingId + "/" + tutorId, {
-		method: 'GET',
-		headers: {
-			'Authorization': authorization,
-			'Content-type': 'application/json',
-		},
-	})
-	.then(response => {
-		if (response.ok) {
-			return response.json()
-		}
-		throw response;
-	})
-	.catch(error => {
-		console.error("error code found in (SuperTutor.js -> assignPatronToTutor()", error);
+  response = await fetch(fullAddr + meetingId + "/" + tutorId, {
+    method: 'GET',
+    headers: {
+      'Authorization': authorization,
+      'Content-type': 'application/json',
+    },
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json()
+    }
+    throw response;
+  })
+  .catch(error => {
+    console.error("error code found in (SuperTutor.js -> assignPatronToTutor()", error);
         return error;
-	})
-	.finally(() => {
-		//
-	})
+  })
+  .finally(() => {
+    //
+  })
 
-	return response;
+  return response;
 }
 
 async function updatePatronNotes(notes) {
   const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/update_patron_note";
   const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
-    let response = [];
+  let response = [];
   response = await fetch(fullAddr, {
     method: 'POST',
     headers: {
       'Authorization': authorization,
       'Content-type': 'application/json',
     },
-        body: JSON.stringify({
-            "notes": notes,
-        },)
+    body: JSON.stringify({
+        "notes": notes,
+    },)
   })
   .then(response => {
     if (response.ok) {
@@ -168,7 +161,39 @@ async function updatePatronNotes(notes) {
   return response;
 }
 
-const SuperTutor = () =>
+
+async function clearQueue() {
+  const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/clear_queue";
+  const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+  let status;
+
+
+  status = await fetch(fullAddr, {
+      method: 'POST',
+      headers: {
+      'Authorization': authorization,
+      'Content-type': 'application/json',
+      },
+  })
+  .then(response => {
+      if (response.ok) {
+      return response.json();
+      }
+      throw response;
+  })
+  .catch(error => {
+      console.error("error code found in Tutor (Tutor.js -> clearQueue()", error);
+      console.log(error);
+      return error;
+  })
+  .finally(() => {
+      //
+  })
+
+  return status; 
+}
+
+const Tutor = (props) =>
 {
     const { userId } = React.useContext(UserContext);
 
@@ -189,7 +214,7 @@ const SuperTutor = () =>
     const [meetingTopic, setMeetingTopic] = useState();
     const [inMeeting, setInMeeting] = useState(false);
     const [patron, setPatron] = useState();
-    const [patronInRoom, setPatronInRoom] = useState(undefined);
+    const [patronInRoom, setPatronInRoom] = useState(false);
     const [patronNotes, setPatronNotes] = useState([]);
     const [devices, setDevices] = useState([]);
     const devicesRef = useRef(devices);
@@ -203,7 +228,6 @@ const SuperTutor = () =>
     const [availTutors, setAvailTutors] = useState([]);
     const [onlineTutors, setOnlineTutors] = useState([]);
     const [selectedTutor, setSelectedTutor] = useState();
-    const [isST, setIsST] = useState(true);
 
     const [expanded, setExpanded] = React.useState('panel1');
 
@@ -213,7 +237,6 @@ const SuperTutor = () =>
 
     const [noteTaking, setNoteTaking] = useState(false);
     const [fsNoting,  setFsNoting] = useState(false);
-
 
     const handleExpansion = (panel) => (event, newExpanded) => {
       setExpanded(newExpanded ? panel : false);
@@ -249,7 +272,8 @@ const SuperTutor = () =>
         if (response["STATUS"] === "NO SUCCESS")
           console.error("There was an error assigning patron to tutor");
         else
-          socketInstance.emit("joined_queue", {"m_id": meetingId, "regular_tutor_id": tutor})
+          socketInstance.emit("joined_queue", {"m_id": meeting, "regular_tutor_id": tutor})
+          pullAllData();
       })
       .catch((e) => {
           console.error("There was an error assigning a patron to a tutor");
@@ -334,8 +358,14 @@ const SuperTutor = () =>
 
     const pushChat = (tutorId, message, toThem=1) => {
       console.log(tutorId);
+      let num2day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      let num2month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      let currentTime = new Date(Date.now());
       const currentTutors = tutorsRef.current;
-      currentTutors[tutorId][1].push([toThem, message, Date.now()]);
+      currentTutors[tutorId][1].push([toThem, message, 
+         num2day[currentTime.getDay()] + ", " + currentTime.getDate().toString().padStart(2, "0") + " " + 
+         num2month[currentTime.getMonth()] + " " + currentTime.getFullYear() + " " +
+         currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds() + " GMT"]);
       updateTutorStuff(currentTutors);
     }
 
@@ -353,7 +383,7 @@ const SuperTutor = () =>
     const pullAllData = () => {
       logon(userId)
       .then((response) => {
-        //console.log(response)
+        console.log(response)
         updateTutorStuff(response["tutors"]);
         setPatronQueue(response["queue"]);
         setDevices(response["devices"]);
@@ -364,6 +394,7 @@ const SuperTutor = () =>
     }
 
     function socketSetup() {
+      const connType = (props.isST ? "super" : "") + "tutor";
       const socket = io({
           transports: ["polling", "websocket", "webtransport"],
           //path: "/socket.io/",
@@ -373,7 +404,7 @@ const SuperTutor = () =>
           },
           query:{
               "uuid":userId,
-              "type":"tutor",
+              "type":connType,
           }
           //autoConnect:false,
           //rejectUnauthorized: false, // big bad do not uncomment
@@ -450,15 +481,19 @@ const SuperTutor = () =>
 
       socket.on("t_log_off", (data) => {
         // logic to get tutor information and add it to tutors
-        const currentTutors = tutorsRef.current;
-        currentTutors[data["uuid"]][0][6] = 0;
+        try {
+          const currentTutors = tutorsRef.current;
+          currentTutors[data["uuid"]][0][6] = 0;
 
-        updateTutorStuff(currentTutors);
+          updateTutorStuff(currentTutors);
 
-        logon(data["uuid"], "off")
-        .catch((e) => {
+          logon(data["uuid"], "off")
+          .catch((e) => {
+            throw e
+          });
+        } catch (e) {
           console.error(e);
-        });
+        }
         
       });
 
@@ -574,10 +609,11 @@ const SuperTutor = () =>
                   id="panel1-header"
                   className="AccordionSummary"
                 >
-                  <Typography component={"span"} variant={'body2'}>IDs in Service</Typography>
+                  <Typography component={"span"} variant={'body2'}>IDs in Service </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography component={"span"} variant={'body2'}>
+                    <button className="notes-update-button" onClick={() => {clearQueue(); socketInstance.emit("clear_patron_queue", {}); clearQueue();}}>Clear Queue</button> 
                     
                     <ServiceBox
                       setDevices={setDevices}
@@ -590,6 +626,7 @@ const SuperTutor = () =>
                       setSelectedTutor={setSelectedTutor} 
                       availTutors={availTutors} 
                       queue={patronQueue} 
+                      patron={patron}
                       setPatron={setPatron} 
                       setMeetingTopic={setMeetingTopic} 
                       setPatronQueue={setPatronQueue} 
@@ -597,7 +634,8 @@ const SuperTutor = () =>
                       setMeetingId={setMeetingId} 
                       tutors={tutors}
                       setPatronNotes={setPatronNotes}
-                      // clearQueue={() => setPatronQueue([])} 
+                      userId={userId}
+                      patronInRoom={patronInRoom}
                     />
 
                   </Typography>
@@ -606,35 +644,33 @@ const SuperTutor = () =>
             </div>
 
             <div id="tutor-content">
-            
-                <div className="left-half-format">
-                  
-
-                  <Accordion 
-                    defaultExpanded 
-                    id="meeting-box"
-                    className={meetingId !== undefined ? "customZoomAccordion" : "ZoomAccordion"}
+              <div className="left-half-format">
+                <Accordion 
+                  defaultExpanded 
+                  id="meeting-box"
+                  className={meetingId !== undefined ? "customZoomAccordion" : "ZoomAccordion"}
+                >
+                  <AccordionSummary
+                    expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
+                    aria-controls="panel2-content"
+                    id="panel2-header"
+                    className="AccordionSummary"
                   >
-                    <AccordionSummary
-                      expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
-                      aria-controls="panel2-content"
-                      id="panel2-header"
-                      className="AccordionSummary"
-                    >
                     <Typography component={"span"} variant={'body2'}>
-                        {(meetingId === undefined) &&
-                        <div>Zoom Call</div>
-                        }
-                        
-                        {(meetingId !== undefined) &&
-                        <div style={{fontWeight: 'bold'}}>Zoom Call - In Meeting with {patron[3]} {patron[4]}</div>
-                        }
+                      {(meetingId === undefined) &&
+                      <div>Illuminated Session</div>
+                      }
+                      
+                      {(meetingId !== undefined) &&
+                      <div style={{fontWeight: 'bold'}}>Illuminated Session - In Meeting with {patron[3]} {patron[4]}</div>
+                      }
                     </Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography component={"span"} variant={'body2'}>
                       <MeetingView 
                         socketInstance={socketInstance} 
-                        isST={isST} 
+                        isST={props.isST} 
                         handle={handleEmph} 
                         emphRooms={emphRooms} 
                         availTutors={availTutors} 
@@ -655,39 +691,66 @@ const SuperTutor = () =>
                         setPatronNotes={setPatronNotes} 
                         setFsNoting={setFsNoting}
                         fsNoting={fsNoting}
+                        setPatronInRoom={setPatronInRoom}
+                        pullAllData={pullAllData}
+                        patronLeave={() => {doNotification("Patron " + patron[3] + " " + patron[4] + " has left the meeting"); setPatronInRoom(false);}}
                       />
-                    </AccordionDetails>
-                  </Accordion>
-                  
-
-                </div>
-                <div className="right-half-format">
-                  <Accordion defaultExpanded id="chat-box" className="ChatBoxAccordion" style={{height: '59.5vh'}}>
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+                
+                {props.isST && (
+                  <Accordion defaultExpanded id="room-box" className={(emphRooms && inMeeting) ? "customAccordion" : "Accordion"}>
                     <AccordionSummary
                       expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
-                      aria-controls="panel4-content"
-                      id="panel4-header"
+                      aria-controls="panel2-content"
+                      id="panel2-header"
                       className="AccordionSummary"
                     >
-                        <Typography component={"span"} variant={'body2'}>Chat</Typography>
+                        <Typography component={"span"} variant={'body2'}><div>Rooms</div></Typography>
                     </AccordionSummary>
-                    <AccordionDetails sx={{ height: "90%" }}>
-                      <TutorChat 
-                        pushChat={pushChat}
-                        meetingId={meetingId} 
-                        tutors={onlineTutors}
-                        inMeeting={inMeeting} 
-                        socketInstance={socketInstance} 
-                        patron={patron} 
-                        setPatron={setPatron} 
-                        updateNote={() => {updatePatronNotes(patronNotes)}} 
-                        patronNotes={patronNotes}
-                        setPatronNotes={setPatronNotes}
-                      />
+                    <AccordionDetails>
+                      <Typography component={"span"} variant={'body2'}>
+                        <RoomBox 
+                          setMeetingId={setMeetingId} 
+                          setSelectedTutor={setSelectedTutor} 
+                          tutors={tutors} 
+                          patron={patron} 
+                          assignPT={assignToTutor} 
+                          onlineTutors={onlineTutors} 
+                          meetingId={meetingId}/>
+                      </Typography>
                     </AccordionDetails>
                   </Accordion>
-                  
-                </div>
+                )}
+
+              </div>
+              <div className="right-half-format">
+                <Accordion defaultExpanded id="chat-box" className="ChatBoxAccordion" >
+                  <AccordionSummary
+                    expandIcon={<FontAwesomeIcon icon="fa-solid fa-caret-down"/>}
+                    aria-controls="panel4-content"
+                    id="panel4-header"
+                    className="AccordionSummary"
+                  >
+                    <Typography component={"span"} variant={'body2'}>Chat</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ height: "90%" }}>
+                    <TutorChat 
+                      pushChat={pushChat}
+                      meetingId={meetingId} 
+                      tutors={onlineTutors}
+                      inMeeting={inMeeting} 
+                      socketInstance={socketInstance} 
+                      patron={patron} 
+                      setPatron={setPatron} 
+                      patronNotes={patronNotes}
+                      setPatronNotes={setPatronNotes}
+                      isST={props.isST}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </div>
             </div>
             <Popup contentStyle={{width:"80%"}} open={settingsOpen} onClose={() => {setSettingsOpen(false)}} position="center">
                 Settings <button onClick={getMediaDevices}>Refresh device list</button>
@@ -728,4 +791,4 @@ const SuperTutor = () =>
     }
 }
 
-export default SuperTutor;
+export default Tutor;

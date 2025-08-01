@@ -101,16 +101,12 @@ const MeetingView = (props) =>
 
     const [fullScreenMeeting, setFullScreenMeeting] = useState(false);
     const [patronScreenShare, setPatronScreenShare] = useState(false);
-    const [streamPayload, setStreamPayload] = useState();
-    const [patronPayload, setPatronPayload] = useState();
 
     const [isPlayerInPlayer, setIsPlayerInPlayer] = useState(false);
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [showVideo, setShowVideo] = useState(false);
     const [useAudio, setUseAudio] = useState(false);
     const [meetingStarted, setMeetingStarted] = useState(false);
-    const [patronCameraOn, setPatronCameraOn] = useState(false);
-    const [noteTaking, setNoteTaking] = useState(false);
     const [smallTutorPic, setSmallTutorPic] = useState(false);
 
     const [ending, setEnding] = useState(false);
@@ -489,8 +485,6 @@ const MeetingView = (props) =>
             console.error("Stream uninitted: ", stream);
             return;
         }
-        setPatronPayload(payload);
-        setPatronCameraOn(video);
     }
 
     const renderPatronScreenShare = async (payload, sharing = true) => 
@@ -513,7 +507,6 @@ const MeetingView = (props) =>
             console.error("Stream uninitted: ", stream);
             return;
         }
-        setStreamPayload(payload);
         setPatronScreenShare(sharing);
     }
 
@@ -681,7 +674,7 @@ const MeetingView = (props) =>
                         )}
                         {meetingStarted && fullScreenMeeting && (
                                 <Tooltip className="small-screen-bt" title="Toggle Noting">
-                                    <button className="meeting-other-button" onClick={() => {console.log("Note taking is " + props.noteTaking), console.log("fsNoting is " + props.fsNoting), props.setNoteTaking(!props.noteTaking), props.setFsNoting(!props.fsNoting), console.log("Note taking is " + props.noteTaking), console.log("fsNoting is " + props.fsNoting)}}>
+                                    <button className="meeting-other-button" onClick={() => {props.setNoteTaking(!props.noteTaking), props.setFsNoting(!props.fsNoting)}}>
                                         <FontAwesomeIcon icon="fa-solid fa-note-sticky" />
                                     </button>
                                 </Tooltip>
@@ -782,14 +775,14 @@ const MeetingView = (props) =>
             
             {props.meetingId === undefined && (
                 <>
-                    Not currently in meeting...
+                    Not currently in session...
                 </>
             )}
             {props.meetingId !== undefined && (
                 <>
                     {(stream === null || stream === undefined) && (
                         <div style={{ color:'white', textAlign: 'center' }}>
-                            <b>Initializing meeting, please wait a moment...</b>
+                            <b>Initializing session, please wait a moment...</b>
                         </div>
                     )}
                     {(stream !== null && stream !== undefined) && (
@@ -810,7 +803,20 @@ const MeetingView = (props) =>
             <Popup className="fullscreen-popout" contentStyle={{height:"97%", width:"97%", backgroundColor:"black"}} open={fullScreenMeeting} onClose={() => setFullScreenMeeting(false)} position="center">
                 <FontAwesomeIcon icon="fa-solid fa-minimize" className="max-button" onClick={() => {setFullScreenMeeting(false); console.log("click min")}}/> :
                 <div className="fullscreen-tutors-videos-box" ref={bigBoxRef}>
-
+                {props.noteTaking && props.fsNoting && meetingStarted && (
+                    <div className="fs-noting">
+                        <PatronNotes 
+                            isST={props.isST}
+                            inMeeting={props.inMeeting}
+                            patron={props.patron}
+                            setPatron={props.setPatron}
+                            setNoteTaking={props.setNoteTaking}
+                            patronNotes={props.patronNotes}
+                            setPatronNotes={props.setPatronNotes}
+                            fsNoting={props.fsNoting}
+                        />
+                    </div>
+                )}
                 </div>
                 {toolBar()}
             </Popup>

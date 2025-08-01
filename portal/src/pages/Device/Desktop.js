@@ -114,7 +114,7 @@ async function patronDropped(meetingId) {
         throw response;
     })
     .catch(error => {
-        console.error("error code found in NotificationBox (NotificationBox.js -> patronDropped()", error);
+        console.error("error code found in Desktop (Desktop.js -> patronDropped()", error);
         console.error(error);
         return error;
     })
@@ -613,12 +613,12 @@ const Desktop = (props) =>
             <div className="patron-content">
                 {(inMeeting === false && props.waitingForMeeting === true) && (
                 <div className="login-content">
-                    <h1>Waiting to be put in meeting...</h1>
+                    <h1>Waiting to be put in session...</h1>
                 </div>
                 )}
                 {(inMeeting === false && props.waitingForMeeting === false) && (
                     <div className="login-content">
-                        <h1>Joining meeting - please wait...</h1>
+                        <h1>Joining session - please wait...</h1>
                     </div>
                 )}
                 {(inMeeting === true && stream !== undefined) && (

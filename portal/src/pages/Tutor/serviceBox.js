@@ -61,7 +61,7 @@ async function patronJoinQueue(meetingId) {
         throw response;
     })
     .catch(error => {
-        console.error("error code found in NotificationBox (NotificationBox.js -> patronJoinQueue()", error);
+        console.error("error code found in serviceBox (serviceBox.js -> patronJoinQueue()", error);
         console.log(error);
         return error;
     })
@@ -199,7 +199,7 @@ const ServiceBox = (props) =>
                                                 
                                                 <Popup contentStyle={{height:"fit-content", width:"fit-content", position: 'absolute', top: patronRef.current ? patronRef.current.getBoundingClientRect().bottom : 0, left: patronRef.current ? patronRef.current.getBoundingClientRect().left : 0}} open={selectPatron === patron[0]} onClose={() => setSelectPatron(null)}>
                                                     <div className="patron-opt-item">
-                                                            <button className="patron-opt-buttons" onClick={() => {joinMeeting(patron); setAssigning(false); setSelectPatron(null); setDevNoting(false)}}>Join Call</button>
+                                                            <button className="patron-opt-buttons" onClick={() => {joinMeeting(patron); setAssigning(false); setSelectPatron(null); setDevNoting(false)}}>Join Session</button>
                                                             <button className="patron-opt-buttons" onClick={() => {setAssigning(true); setDevNoting(false); console.log(assigning)}}>Assign To Room</button>
                                                             <button className="patron-opt-buttons" onClick={() => {setAssigning(false); setDevNoting(true)}}>Device Notes</button>
                                                     </div>
@@ -283,7 +283,6 @@ const ServiceBox = (props) =>
                 </>
             )}
 
-            {/* <button className="clear-button" onClick={() => {clearQueue(); props.socketInstance.emit("clear_patron_queue", {}); props.clearQueue();}}>Clear Queue</button> */}
 
         </div>
     );

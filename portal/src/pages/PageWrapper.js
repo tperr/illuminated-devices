@@ -1,7 +1,7 @@
 import Navbar from '../subscript/universal/Navbar.js';
 import Footer from '../subscript/universal/Footer.js';
 
-const PageWrapper = (name, Page, {appearingAsValue, pageID, userId, ...kwargs} = {}) => {
+const PageWrapper = (name, Page, {appearingAsValue, isST, pageID, userId, ...kwargs} = {}) => {
 
     return (
         
@@ -11,7 +11,7 @@ const PageWrapper = (name, Page, {appearingAsValue, pageID, userId, ...kwargs} =
                     <Navbar appearingAsValue={appearingAsValue} pageId={pageID} userId={userId}/>
                 </div>
                 <div id={name} className='page' /* style={{height:"88vh"}} */>
-                    <Page />
+                    <Page isST={isST} />
                 </div>
                 <div className="grid-footer">
                     <Footer />

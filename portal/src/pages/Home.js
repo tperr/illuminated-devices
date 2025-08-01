@@ -5,9 +5,8 @@ import PageWrapper from './PageWrapper.js';
 
 // import Provider from '../pages/Provider/Provider.js';  //-- Deprecated
 import OrganizationHome from '../pages/OrganizationHome/OrganizationHome.js';
-import Tutor from './SuperTutor/Tutor.js';
+import Tutor from './Tutor/Tutor.js';
 import Device from './Device/Device.js';
-import SuperTutor from './SuperTutor/SuperTutor.js';
 
 const Home = () => {
     const { userId, appearingAs, userDetails } = useContext(UserContext);
@@ -56,6 +55,7 @@ const Home = () => {
 
 
     if (((userId !== null) && (userId !== undefined)) && ((accountScope !== null) & (accountScope !== undefined))) {
+        // const component = () => <Tutor isST={accountScope===2}/>
         switch(accountScope) {
             // Developer Account
             case(0): 
@@ -66,8 +66,9 @@ const Home = () => {
                     default: return PageWrapper("default-home", DefaultPage, {appearingAsValue:appearingAs, pageID:0})
                 }
             case(1): return PageWrapper("default-home", DefaultPage) // admin
-            case(2): return PageWrapper("tutor-home", SuperTutor) // supertutpr
-            case(3): return PageWrapper("tutor-home", Tutor) // tutor?
+            case(2): // supertutpr
+            case(3): // tutor
+                return PageWrapper("tutor-home", Tutor, {isST:accountScope===2}) 
             case(4): // organization
                 if (userId === "b275f155-1614-11ed-a1ce-0050569fc3a3") {
                     return PageWrapper("organization-home", OrganizationHome)

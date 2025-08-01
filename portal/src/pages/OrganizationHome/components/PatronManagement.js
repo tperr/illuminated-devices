@@ -1,6 +1,6 @@
 /***** Imports *****/
 // React
-import React from "react";
+import React, { useRef } from "react";
 
 // FontAwesome Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,6 +14,7 @@ import { Patron } from "../classes/Patron";
 import DatePicker from "react-datepicker";
 import { getYear, getMonth } from "date-fns";
 import Popup from 'reactjs-popup';
+import generatePDF from 'react-to-pdf';
 
 // Material UI Dropdowns
 import Box from '@mui/material/Box';
@@ -213,6 +214,35 @@ function validatePhoneNumber(number) {
     return number.replace(/[^\d]/g, '');
 }
 
+
+async function getPatronNotes(pid) {
+    const fullAddr = "https://illuminated.cs.mtu.edu/ark/tut/get_patron_notes/" + pid;
+    const authorization = 'Bearer ' + sessionStorage.getItem("BLIGHT");
+    let itemList = [];
+
+    itemList = await fetch(fullAddr, {
+        method: 'GET',
+        headers: {
+            'Authorization': authorization,
+            'Content-type': 'application/json',
+        },
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+        }
+        throw response;
+    })
+    .catch(error => {
+        console.error("error code found in receive account details (Provider.js -> getPatronNotes() -> Ark request -> (catch) received_response[\"error\"] ", error);
+    })
+    .finally(() => {
+        //
+    })
+
+    return itemList; 
+}
+
 /***** Main Export *****/
 const PatronManagement = (props) => {
     /***** Variables *****/
@@ -238,6 +268,10 @@ const PatronManagement = (props) => {
     const [fieldPatronZip, setFieldPatronZip] = React.useState("");
     const [fieldPatronNotes, setFieldPatronNotes] = React.useState("");
     const [fieldLocalId, setFieldLocalId] = React.useState("");
+
+    const [showNotes, setShowNotes] = React.useState(false);
+    const [patronNotes, setPatronNotes] = React.useState();
+    const pdfContentRef = useRef();
 
     const [showPatronLog, setShowPatronLog] = React.useState(false);
 
@@ -293,21 +327,21 @@ const PatronManagement = (props) => {
 
     /***** UseEffects *****/
     /* This was merged with below by adding props.currentPatron to its dependency
-    Keep an eye on it and if it seems fine then this can be removed 
+    Keep an eye on it and if it seems fine then this can be removed */
     React.useEffect(() => {
-        setFieldStylesChange(-1);
-        setFieldPatronName(props.currentPatron.identifier);
-        setFieldPatronUnixBirthday(props.currentPatron.birthday);
-        setFieldPatronEmail(props.currentPatron.email);
-        setFieldPatronPhone(props.currentPatron.phone);
-        setFieldPatronStreet(props.currentPatron.streetAddress);
-        setFieldPatronCity(props.currentPatron.city);
-        setFieldPatronState(props.currentPatron.state);
-        setFieldPatronZip(props.currentPatron.zip);
-        setFieldPatronNotes(props.currentPatron.notes);
-        setFieldLocalId(props.currentPatron.bsid); 
+        if (props.currentPatron && props.currentPatron.id)
+        {
+            getPatronNotes(props.currentPatron.id)
+            .then((response) => {
+                setPatronNotes(response["NOTES"]);
+            })
+            .catch(e => {
+                console.error("There was an error fetching patron notes", e);
+            })
+            //console.log(props.currentPatron);
+        }
     }, [props.currentPatron]);
-    */
+    
 
     React.useEffect(() => {
         if((props.currentPatron === undefined) || (props.currentPatron === null) || addingNewPatron) {
@@ -1110,6 +1144,15 @@ const PatronManagement = (props) => {
                                                 >
                                                     <FontAwesomeIcon icon="book"/> Show Log
                                                 </button>
+                                                
+                                                {/* This is just for testing purposes, should not be allowed */}
+                                                {false && (<button 
+                                                    className={"button2"} 
+                                                    onClick={() => {setShowNotes(true);}}
+                                                >
+                                                    <FontAwesomeIcon icon="book"/> Show Notes
+                                                </button>
+                                                )}
                                             </div>
                                         </div>
                                         )}
@@ -1624,6 +1667,37 @@ const PatronManagement = (props) => {
                         </button>
                     </div>
                 </div>
+            </Popup>
+
+            <Popup open={showNotes} onClose={() => {setShowNotes(false); }} position="center">
+                {props.currentPatron && (
+                    <div className="patron-notes-box">
+                        <div className="notes-content">
+                            <button className="notes-update-button download-button" onClick={() => generatePDF(pdfContentRef)}>
+                                Download notes
+                            </button>
+
+                            <div ref={pdfContentRef}>
+                                <div className="patron-notes-name">
+                                Patron Notes for {props.currentPatron.fname} {props.currentPatron.lname} 
+                                </div>
+                                {patronNotes && patronNotes.map((note, idx) => {
+                                return (
+                                    <div key={note[0]}>
+                                        <div className="patron-notes-name">
+                                            {note.length === 4 ? note[3] + " ": "Today "}
+                                            ({idx + 1} / {patronNotes.length})
+                                        </div>
+                                        <div className="notes-textbox">
+                                            {note[2]}
+                                        </div>
+                                    </div>
+                                )
+                                })}
+                            </div> 
+                        </div>
+                    </div>
+                )}
             </Popup>
 
     </div>
