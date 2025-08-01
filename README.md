@@ -1,5 +1,7 @@
 # Illuminated Devices
 
+You can view the website as is [here](https://illuminated.cs.mtu.edu).
+
 Our team is designing a sociotechnical system called Illuminated Devices to supplement and extend [BASIC (Basic Adult Skills in Computing)](https://www.mtu.edu/unscripted/2017/03/basic-saturdays.html), a community-based tutoring program. COVID-19 required us to suspend this face-to-face program, leaving community members—especially those who do not have the skills or confidence to seek technology help online—without any assistance. Our current project seeks to provide remote technology training via video calling on a portable device.
 
 We currently have 2 publications as a result of this work:
